@@ -1,0 +1,14 @@
+{
+  "name": "centro-logistica",
+  "version": "1.0.0",
+  "private": true,
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "lab:delivery-events": "node src/delivery-events-lab.js",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}
