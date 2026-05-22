@@ -19,7 +19,7 @@ Al final de la unidad, el proyecto debe poder demostrar un flujo distribuido def
 
 ## Estado actual
 
-El proyecto está trabajado hasta **Sesión 16**.
+El proyecto está trabajado hasta **Sesión 18**.
 
 | Área | Estado |
 |---|---|
@@ -28,9 +28,13 @@ El proyecto está trabajado hasta **Sesión 16**.
 | gRPC | Implementado en `monitor-telemetria`. |
 | Resiliencia | Implementada en `centro-logistica → planificador-rutas`. |
 | Semánticas de entrega | Consumidor in-memory de `EntregaCompletada` con idempotencia por `eventId` y estado de negocio. |
+| Patrones de comunicación | Laboratorio in-memory para request/response, pub/sub, cola FIFO y streaming. |
+| Backpressure | Laboratorio in-memory para presión de streaming, cola bounded, backlog, drops/sampling y retry. |
 | Tests | Suites por servicio con `npm test`. |
 | Laboratorio Sesión 15 | Documentado en `docs/instrucciones-laboratorio-sesion-15.md`. |
 | Laboratorio Sesión 16 | Documentado en `docs/instrucciones-laboratorio-sesion-16.md`. |
+| Laboratorio Sesión 17 | Documentado en `docs/instrucciones-laboratorio-sesion-17.md`. |
+| Laboratorio Sesión 18 | Documentado en `docs/instrucciones-laboratorio-sesion-18.md`. |
 
 ## Servicios del sistema
 
@@ -97,8 +101,8 @@ La unidad está organizada en sesiones incrementales. Cada sesión agrega una de
 | 14 | Serialización, versionado y compatibilidad | Norma `/api/v1`, reglas JSON/protobuf, estados y eventos. | Permite evolucionar el sistema sin romper consumidores. |
 | 15 | Timeouts, retries, backoff e idempotencia | Política de resiliencia, tests de falla, guía de laboratorio. | Hace que el flujo `centro-logistica → planificador-rutas` tolere fallas reales. |
 | 16 | Semánticas de entrega | Consumidor idempotente de `EntregaCompletada`, matriz de semánticas, pruebas de duplicados y pérdida. | Define qué pasa cuando un mensaje llega dos veces, tarde o nunca. |
-| 17 | Request/response, pub/sub, colas y streaming | MVP integrado con REST, gRPC y primer evento de negocio. | Une servicios en un flujo distribuido demostrable de punta a punta. |
-| 18 | Backpressure y desacoplamiento | Estrategia para ráfagas, buffering y procesamiento desacoplado. | Evita que telemetría o eventos saturen el sistema. |
+| 17 | Request/response, pub/sub, colas y streaming | Laboratorio didáctico con REST, gRPC streaming, pub/sub y cola FIFO in-memory. | Compara patrones de comunicación sobre flujos reales de AURA sin introducir broker todavía. |
+| 18 | Backpressure y desacoplamiento | Laboratorio de presión con buffers bounded, backlog, drops/sampling, retry y reducción de tasa. | Evita confundir desacoplamiento con capacidad infinita. |
 | 19 | Naming, identificadores y discovery | Catálogo de IDs, nombres de eventos, servicios y claves técnicas. | Da consistencia operativa al sistema y prepara trazabilidad. |
 | 20 | Integración y cierre | Demo integrada, decisiones arquitectónicas y backlog de Unidad 3. | Cierra un MVP defendible y deja el camino para coordinación distribuida avanzada. |
 
@@ -135,7 +139,70 @@ Regla de trabajo por sesión:
 4. implementación mínima;
 5. evidencia para defender la decisión.
 
-## Laboratorio destacado: Sesión 16
+## Laboratorio destacado: Sesión 18
+
+La Sesión 18 muestra que desacoplar no elimina la presión: hay que medir backlog, lag, límites y velocidad de consumo.
+
+```text
+streaming pressure: telemetría -> buffer bounded -> consumidor lento
+queue pressure: OrderCreated -> notificaciones bounded -> retry/defer
+operational pressure: concierto -> pedidos + drones + entregas + auditoría + dashboard
+business rule: telemetría puede samplearse; auditoría/EntregaCompletada no se descartan silenciosamente
+```
+
+Comandos principales:
+
+```bash
+cd services/monitor-telemetria
+npm run lab:telemetry-pressure -- --saturated
+```
+
+```bash
+cd services/centro-logistica
+npm run lab:backpressure -- --controlled
+```
+
+```bash
+cd services/centro-logistica
+npm run lab:operational-pressure -- --concert
+```
+
+Guía completa:
+
+```text
+docs/instrucciones-laboratorio-sesion-18.md
+```
+
+## Laboratorio anterior: Sesión 17
+
+La Sesión 17 compara patrones de comunicación sobre flujos AURA:
+
+```text
+request/response: centro-logistica -> planificador-rutas
+pub/sub: OrderCreated -> notificaciones + auditoría + dashboard
+cola FIFO: trabajos de notificación
+streaming: telemetría de drones
+```
+
+Comandos principales:
+
+```bash
+cd services/centro-logistica
+npm run lab:communication-patterns -- --orders=5
+```
+
+```bash
+cd services/monitor-telemetria
+npm run lab:telemetry-stream -- --concert --count=100 --skip-delay
+```
+
+Guía completa:
+
+```text
+docs/instrucciones-laboratorio-sesion-17.md
+```
+
+## Laboratorio anterior: Sesión 16
 
 La Sesión 16 valida semánticas de entrega para eventos de negocio:
 
@@ -203,6 +270,8 @@ docs/instrucciones-laboratorio-sesion-15.md
 |---|---|
 | `docs/unidad-2-backlog.md` | Backlog y cronograma detallado de sesiones 11–20. |
 | `docs/sesiones-11-15-resiliencia.md` | Alineación técnica de sesiones 11–15 y política implementada. |
+| `docs/instrucciones-laboratorio-sesion-18.md` | Guía para medir backpressure, backlog, sampling y colas bounded. |
+| `docs/instrucciones-laboratorio-sesion-17.md` | Guía para comparar request/response, pub/sub, colas y streaming. |
 | `docs/instrucciones-laboratorio-sesion-16.md` | Guía para validar semánticas de entrega e idempotencia de eventos. |
 | `docs/instrucciones-laboratorio-sesion-15.md` | Guía paso a paso para validar resiliencia en laboratorio. |
 | `docs/sesion-13-cierre-y-prueba-funcional.md` | Evidencia de cierre funcional inicial. |
@@ -219,6 +288,6 @@ Un avance de sesión está completo cuando cumple estas condiciones:
 
 ## Próximo paso
 
-El siguiente trabajo es la **Sesión 17: Request/response, pub/sub, colas y streaming**.
+El siguiente trabajo es la **Sesión 19: Naming, identificadores y discovery**.
 
-Ahí se conectará el aprendizaje de REST, gRPC, resiliencia y eventos para construir un MVP integrado de comunicación distribuida.
+Ahí se ordenarán identificadores, nombres de eventos, servicios y claves técnicas para mejorar trazabilidad y consistencia operativa.

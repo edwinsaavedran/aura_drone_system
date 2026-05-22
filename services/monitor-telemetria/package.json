@@ -5,6 +5,8 @@
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
+    "lab:telemetry-stream": "node src/telemetry-stream-simulator.js",
+    "lab:telemetry-pressure": "node src/telemetry-pressure-lab.js",
     "test": "node --test"
   },
   "dependencies": {
