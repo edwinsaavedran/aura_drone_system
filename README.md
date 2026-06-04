@@ -4,38 +4,91 @@
 
 El objetivo no es “hacer endpoints porque sí”. El objetivo es que el estudiante aprenda a diseñar, implementar, probar y justificar sistemas distribuidos reales: sistemas donde hay latencia, fallas parciales, duplicados, contratos versionados, servicios que no siempre responden y decisiones técnicas que tienen consecuencias.
 
-## Qué vas a construir
+## Estado actual
 
-Durante la Unidad 2 se construye la capa de comunicación distribuida de AURA:
+El estado actual del repo es **PC02 implementada sobre la base acumulada de las sesiones 11–18**.
+
+Esto significa que el proyecto ya no debe leerse solo como una secuencia de laboratorios. Ahora tiene un hito integrador: la **Práctica Calificada 02**, donde se conectan resiliencia, semánticas de entrega, backpressure, patrones de comunicación, naming y discovery básico.
+
+Ruta principal para revisar el hito actual:
+
+```text
+docs/PC02-20261.pdf        # enunciado original de la práctica
+docs/pc2-respuestas.md     # solución docente, evidencia y decisiones técnicas
+```
+
+| Área | Estado |
+|---|---|
+| Hito vigente | **PC02 implementada y documentada**. |
+| Arquitectura base | Alineada y documentada para sesiones 11–18. |
+| REST v1 | Implementado en `gestor-flota`, `centro-logistica` y `planificador-rutas`. |
+| gRPC | Implementado en `monitor-telemetria`. |
+| Resiliencia | `centro-logistica → planificador-rutas` con timeout, retry limitado, backoff exponencial con jitter, clasificación retryable/no retryable y propagación de headers. |
+| Semánticas de entrega | Consumidor in-memory de `EntregaCompletada` con idempotencia por `eventId` y estado de negocio. |
+| Patrones de comunicación | Laboratorio in-memory para request/response, pub/sub, cola FIFO y streaming. |
+| Backpressure | Laboratorio in-memory para presión de streaming, cola bounded, backlog, drops/sampling y retry. |
+| Naming/discovery | Comunicación inter-servicio mediante configuración y nombres lógicos en Docker Compose. |
+| Tests | Suites por servicio con `npm test`. |
+
+## Qué queda construido al cierre de PC02
+
+La PC02 consolida la capa de comunicación distribuida de AURA. Al llegar a este punto, el estudiante puede demostrar:
 
 - gestión de drones mediante REST;
 - gestión de órdenes de entrega mediante REST;
 - planificación de rutas como servicio separado;
 - telemetría por gRPC streaming;
-- resiliencia con timeout, retry, backoff e idempotencia;
-- preparación para eventos, colas, trazabilidad y semánticas de entrega.
+- resiliencia con timeout, retry, backoff exponencial con jitter e idempotencia;
+- trazabilidad básica con `X-Correlation-Id`;
+- propagación de intención de negocio con `Idempotency-Key`;
+- consumo idempotente de eventos críticos como `EntregaCompletada`;
+- presión operacional con backlog, lag, drops, sampling, retry y colas bounded;
+- selección justificada de request/response, pub/sub, cola y streaming;
+- naming/discovery básico mediante variables de entorno y nombres lógicos de servicio.
 
-Al final de la unidad, el proyecto debe poder demostrar un flujo distribuido defendible: una orden se recibe, se planifica, se relaciona con flota/telemetría y se observan decisiones técnicas claras para tolerar fallas.
+El objetivo defendible de PC02 es claro: una orden se recibe, se planifica, resiste fallas parciales, evita duplicados de negocio y permite explicar qué flujos se degradan y cuáles no se descartan.
 
-## Estado actual
+## Cómo revisar PC02
 
-El proyecto está trabajado hasta **Sesión 18**.
+La solución de PC02 integra cuatro frentes: resiliencia síncrona, consumo idempotente de `EntregaCompletada`, evidencia de backpressure y revisión de naming/discovery.
 
-| Área | Estado |
+Guía docente completa:
+
+```text
+docs/pc2-respuestas.md
+```
+
+Verificación mínima:
+
+```bash
+cd services/centro-logistica
+npm test
+```
+
+```bash
+cd services/planificador-rutas
+npm test
+```
+
+Evidencia operacional recomendada:
+
+```bash
+cd services/centro-logistica
+npm run lab:delivery-events duplicate-event
+npm run lab:delivery-events same-mission-different-event
+npm run lab:delivery-events wrong-mission
+npm run lab:backpressure -- --controlled
+npm run lab:operational-pressure -- --controlled
+```
+
+Puntos que debe poder defender la entrega:
+
+| Fase PC02 | Evidencia |
 |---|---|
-| Arquitectura base | Alineada y documentada para sesiones 11–15. |
-| REST v1 | Implementado en `gestor-flota`, `centro-logistica` y `planificador-rutas`. |
-| gRPC | Implementado en `monitor-telemetria`. |
-| Resiliencia | Implementada en `centro-logistica → planificador-rutas`. |
-| Semánticas de entrega | Consumidor in-memory de `EntregaCompletada` con idempotencia por `eventId` y estado de negocio. |
-| Patrones de comunicación | Laboratorio in-memory para request/response, pub/sub, cola FIFO y streaming. |
-| Backpressure | Laboratorio in-memory para presión de streaming, cola bounded, backlog, drops/sampling y retry. |
-| PC02 | Solución docente de resiliencia, eventos, backpressure, naming y discovery en `docs/pc2-respuestas.md`. |
-| Tests | Suites por servicio con `npm test`. |
-| Laboratorio Sesión 15 | Documentado en `docs/instrucciones-laboratorio-sesion-15.md`. |
-| Laboratorio Sesión 16 | Documentado en `docs/instrucciones-laboratorio-sesion-16.md`. |
-| Laboratorio Sesión 17 | Documentado en `docs/instrucciones-laboratorio-sesion-17.md`. |
-| Laboratorio Sesión 18 | Documentado en `docs/instrucciones-laboratorio-sesion-18.md`. |
+| Resiliencia | Timeout, retry limitado, backoff exponencial con jitter, clasificación retryable/no retryable y propagación de `X-Correlation-Id`/`Idempotency-Key`. |
+| `EntregaCompletada` | Evento nuevo procesado, duplicado por `eventId` ignorado, evento distinto sobre misión ya completada sin efecto duplicado, misión inválida rechazada. |
+| Backpressure | Métricas `produced/sent`, `accepted`, `processed`, `dropped/sampled`, `buffered/backlog/queueDepth`, `consumerLag/lag`, `rejected` y `retry`. |
+| Naming/discovery | `PLANIFICADOR_RUTAS_URL` para comunicación inter-servicio y nombres consistentes de eventos/tópicos en labs. |
 
 ## Servicios del sistema
 
@@ -90,53 +143,11 @@ cd ../monitor-telemetria && npm test
 cd ../gestor-flota && npm test
 ```
 
-## PC02: solución y evidencia
+## Ruta didáctica de la Unidad 2
 
-La solución de PC02 integra cuatro frentes: resiliencia síncrona, consumo idempotente de `EntregaCompletada`, evidencia de backpressure y revisión de naming/discovery.
+La unidad está organizada en sesiones incrementales y un hito integrador. Cada sesión agrega una decisión, un contrato, una prueba o una pieza ejecutable. La PC02 no aparece como “otro documento”: valida que las piezas construidas hasta la sesión 18 funcionan juntas bajo presión.
 
-Guía docente completa:
-
-```text
-docs/pc2-respuestas.md
-```
-
-Verificación mínima de PC02:
-
-```bash
-cd services/centro-logistica
-npm test
-```
-
-```bash
-cd services/planificador-rutas
-npm test
-```
-
-Evidencia operacional recomendada:
-
-```bash
-cd services/centro-logistica
-npm run lab:delivery-events duplicate-event
-npm run lab:delivery-events same-mission-different-event
-npm run lab:delivery-events wrong-mission
-npm run lab:backpressure -- --controlled
-npm run lab:operational-pressure -- --controlled
-```
-
-Puntos que debe poder defender la entrega:
-
-| Fase PC02 | Evidencia |
-|---|---|
-| Resiliencia | Timeout, retry limitado, backoff exponencial con jitter, clasificación retryable/no retryable y propagación de `X-Correlation-Id`/`Idempotency-Key`. |
-| `EntregaCompletada` | Evento nuevo procesado, duplicado por `eventId` ignorado, evento distinto sobre misión ya completada sin efecto duplicado, misión inválida rechazada. |
-| Backpressure | Métricas `produced/sent`, `accepted`, `processed`, `dropped/sampled`, `buffered/backlog/queueDepth`, `consumerLag/lag`, `rejected` y `retry`. |
-| Naming/discovery | `PLANIFICADOR_RUTAS_URL` para comunicación inter-servicio y nombres consistentes de eventos/tópicos en labs. |
-
-## Cronograma de la Unidad 2
-
-La unidad está organizada en sesiones incrementales. Cada sesión agrega una decisión, un contrato, una prueba o una pieza ejecutable. Así el proyecto final no aparece “mágicamente”: se construye con evidencia.
-
-| Sesión | Tema central | Entregables | Aporte al proyecto final |
+| Hito | Tema central | Entregables | Aporte al proyecto final |
 |---|---|---|---|
 | 11 | Fundamentos de comunicación distribuida | Arquitectura base, responsabilidades de servicios, alcance MVP. | Define qué existe en AURA, qué servicio hace qué y cuál es el flujo principal. |
 | 12 | Síncrono vs asíncrono, latencia y fallas parciales | Matriz de comunicación, fallas esperadas, timeouts iniciales. | Evita diseñar “como si la red fuera perfecta”; prepara decisiones de resiliencia. |
@@ -146,6 +157,7 @@ La unidad está organizada en sesiones incrementales. Cada sesión agrega una de
 | 16 | Semánticas de entrega | Consumidor idempotente de `EntregaCompletada`, matriz de semánticas, pruebas de duplicados y pérdida. | Define qué pasa cuando un mensaje llega dos veces, tarde o nunca. |
 | 17 | Request/response, pub/sub, colas y streaming | Laboratorio didáctico con REST, gRPC streaming, pub/sub y cola FIFO in-memory. | Compara patrones de comunicación sobre flujos reales de AURA sin introducir broker todavía. |
 | 18 | Backpressure y desacoplamiento | Laboratorio de presión con buffers bounded, backlog, drops/sampling, retry y reducción de tasa. | Evita confundir desacoplamiento con capacidad infinita. |
+| **PC02** | Integración evaluada de Unidad 2 | Solución docente, pruebas, laboratorios y justificación técnica. | Comprueba que resiliencia, eventos, backpressure, patrones y naming se pueden defender como sistema. |
 | 19 | Naming, identificadores y discovery | Catálogo de IDs, nombres de eventos, servicios y claves técnicas. | Da consistencia operativa al sistema y prepara trazabilidad. |
 | 20 | Integración y cierre | Demo integrada, decisiones arquitectónicas y backlog de Unidad 3. | Cierra un MVP defendible y deja el camino para coordinación distribuida avanzada. |
 
@@ -182,7 +194,7 @@ Regla de trabajo por sesión:
 4. implementación mínima;
 5. evidencia para defender la decisión.
 
-## Laboratorio destacado: Sesión 18
+## Base didáctica clave: Sesión 18
 
 La Sesión 18 muestra que desacoplar no elimina la presión: hay que medir backlog, lag, límites y velocidad de consumo.
 
