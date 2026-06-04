@@ -176,11 +176,11 @@ Revisión de discovery:
 | Jitter simple acotado por `base` | Suficiente para evitar sincronía en laboratorio. | Política full jitter/equal jitter definida por SRE y observada en producción. |
 | Sin tracing distribuido real | `X-Correlation-Id` cubre trazabilidad básica. | OpenTelemetry con spans por servicio. |
 
-## Checklist docente
+## Checklist Final
 
-- [ ] El estudiante puede explicar por qué no se reintentan errores `4xx` de negocio.
-- [ ] El estudiante puede mostrar `X-Correlation-Id` entrando a `centro-logistica` y llegando a `planificador-rutas`.
-- [ ] El estudiante puede repetir una solicitud con la misma `Idempotency-Key` sin duplicar orden.
-- [ ] El estudiante puede demostrar que `EntregaCompletada` no duplica efectos.
-- [ ] El estudiante puede leer backlog/lag/drops/retry en los labs de presión.
-- [ ] El estudiante puede justificar qué se degrada y qué no se descarta.
+- [ ] El estudiante debe explicar por qué no se reintentan errores `4xx` de negocio.
+- [ ] El estudiante debe mostrar `X-Correlation-Id` entrando a `centro-logistica` y llegando a `planificador-rutas`.
+- [ ] El estudiante debe repetir una solicitud con la misma `Idempotency-Key` sin duplicar orden.
+- [ ] El estudiante debe demostrar que `EntregaCompletada` no duplica efectos.
+- [ ] El estudiante debe leer backlog/lag/drops/retry en los labs de presión.
+- [ ] El estudiante debe justificar qué se degrada y qué no se descarta.

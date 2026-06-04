@@ -6,9 +6,9 @@ El objetivo no es “hacer endpoints porque sí”. El objetivo es que el estudi
 
 ## Estado actual
 
-El estado actual del repo es **PC02 implementada sobre la base acumulada de las sesiones 11–18**.
+El estado actual del repo es **Unidad 2 cerrada con PC02** y **Unidad 3 iniciada con la Sesión 21**.
 
-Esto significa que el proyecto ya no debe leerse solo como una secuencia de laboratorios. Ahora tiene un hito integrador: la **Práctica Calificada 02**, donde se conectan resiliencia, semánticas de entrega, backpressure, patrones de comunicación, naming y discovery básico.
+Esto significa que el proyecto ya no debe leerse solo como una secuencia de laboratorios. La **Práctica Calificada 02** cierra resiliencia, semánticas de entrega, backpressure, patrones de comunicación, naming y discovery básico. La **Unidad 3** empieza desde ese piso para estudiar tiempo, orden, causalidad y coordinación distribuida.
 
 Ruta principal para revisar el hito actual:
 
@@ -19,7 +19,7 @@ docs/pc2-respuestas.md     # solución docente, evidencia y decisiones técnicas
 
 | Área | Estado |
 |---|---|
-| Hito vigente | **PC02 implementada y documentada**. |
+| Hito vigente | **PC02 cerrada; Unidad 3 iniciada con Sesión 21**. |
 | Arquitectura base | Alineada y documentada para sesiones 11–18. |
 | REST v1 | Implementado en `gestor-flota`, `centro-logistica` y `planificador-rutas`. |
 | gRPC | Implementado en `monitor-telemetria`. |
@@ -28,6 +28,7 @@ docs/pc2-respuestas.md     # solución docente, evidencia y decisiones técnicas
 | Patrones de comunicación | Laboratorio in-memory para request/response, pub/sub, cola FIFO y streaming. |
 | Backpressure | Laboratorio in-memory para presión de streaming, cola bounded, backlog, drops/sampling y retry. |
 | Naming/discovery | Comunicación inter-servicio mediante configuración y nombres lógicos en Docker Compose. |
+| Tiempo físico | Laboratorio determinístico en `monitor-telemetria` para wall-clock, monotonic clock, skew, drift y tolerancia. |
 | Tests | Suites por servicio con `npm test`. |
 
 ## Qué queda construido al cierre de PC02
@@ -161,6 +162,23 @@ La unidad está organizada en sesiones incrementales y un hito integrador. Cada 
 | 19 | Naming, identificadores y discovery | Catálogo de IDs, nombres de eventos, servicios y claves técnicas. | Da consistencia operativa al sistema y prepara trazabilidad. |
 | 20 | Integración y cierre | Demo integrada, decisiones arquitectónicas y backlog de Unidad 3. | Cierra un MVP defendible y deja el camino para coordinación distribuida avanzada. |
 
+## Ruta didáctica de la Unidad 3
+
+La Unidad 3 parte de una pregunta incómoda pero necesaria: si cada nodo observa su propio tiempo, ¿cómo defendemos orden, causalidad y decisiones coordinadas?
+
+| Hito | Tema central | Entregables | Aporte al proyecto final |
+|---|---|---|---|
+| **21** | Tiempo físico, skew, drift y límites de sincronización | Laboratorio `lab:physical-time`, tests y guía de laboratorio. | Demuestra que los timestamps físicos son útiles como metadatos, pero no prueban orden global ni reemplazan relojes monotónicos para duraciones. |
+| 22 | Sincronización de relojes: visión general y efectos en sistemas distribuidos | Próximo laboratorio didáctico. | Mostrará cómo estimar offset/delay, aplicar correcciones y evaluar confianza sin vender sincronización como orden global perfecto. |
+| 23 | Lamport clocks y orden parcial | Laboratorio posterior de relojes lógicos. | Permitirá razonar sobre orden parcial sin confiar solo en hora física. |
+| 24 | Vector clocks y causalidad | Laboratorio posterior de causalidad. | Permitirá distinguir eventos causalmente relacionados de eventos concurrentes. |
+| 25 | Exclusión mutua distribuida | Laboratorio posterior de coordinación de acceso a recurso compartido. | Evitará que múltiples nodos ejecuten una sección crítica simultáneamente. |
+| 26 | Locks distribuidos, leases y riesgos operativos | Laboratorio posterior de locks, ownership, expiración y renovación. | Mostrará por qué un lock distribuido necesita tiempo, leases y manejo de fallas. |
+| 27 | Elección de líder y failure detectors | Laboratorio posterior de liderazgo ante fallas parciales. | Permitirá decidir quién coordina cuando hay múltiples nodos candidatos. |
+| 28 | Coordinación distribuida en escenarios reales | Diseño aplicado sobre escenarios AURA con múltiples nodos. | Integrará tiempo, causalidad, locks, líder y fallas en una decisión defendible. |
+| 29 | Laboratorio integrador de sincronización y coordinación | Simulador/laboratorio integrador. | Preparará evidencia técnica para PC3. |
+| 30 | Práctica Calificada 3 | Desarrollo y sustentación técnica. | Evaluará sincronización y coordinación distribuida. |
+
 ## Qué aprende el estudiante
 
 Al trabajar este proyecto, el estudiante practica competencias que sí aparecen en sistemas distribuidos reales:
@@ -194,7 +212,34 @@ Regla de trabajo por sesión:
 4. implementación mínima;
 5. evidencia para defender la decisión.
 
-## Base didáctica clave: Sesión 18
+## Base didáctica actual: Sesión 21
+
+La Sesión 21 muestra los límites prácticos del tiempo físico en sistemas distribuidos:
+
+```text
+wall-clock: útil para metadatos humanos, peligroso para duraciones
+monotonic clock: correcto para medir latencia, timeout y elapsed time
+skew/offset: relojes de nodos pueden diferir
+drift: el error crece entre sincronizaciones
+tolerance window: el servidor valida cuánto error acepta
+```
+
+Comandos principales:
+
+```bash
+cd services/monitor-telemetria
+npm run lab:physical-time -- --skew
+npm run lab:physical-time -- --drift
+npm run lab:physical-time -- --tolerance
+```
+
+Guía completa:
+
+```text
+docs/instrucciones-laboratorio-sesion-21.md
+```
+
+## Laboratorio anterior: Sesión 18
 
 La Sesión 18 muestra que desacoplar no elimina la presión: hay que medir backlog, lag, límites y velocidad de consumo.
 
@@ -323,8 +368,11 @@ docs/instrucciones-laboratorio-sesion-15.md
 
 | Documento | Propósito |
 |---|---|
+| `docs/GESTION SID 2026 I.pdf` | Fuente de verdad académica para la secuencia oficial de sesiones y unidades. |
+| `docs/unidad-3-backlog.md` | Roadmap estratégico de sesiones 21–30 sobre tiempo, orden, causalidad, consenso y consistencia. |
 | `docs/unidad-2-backlog.md` | Backlog y cronograma detallado de sesiones 11–20. |
 | `docs/pc2-respuestas.md` | Solución docente de PC02 con comandos, evidencia, decisiones, limitaciones y checklist de revisión. |
+| `docs/instrucciones-laboratorio-sesion-21.md` | Guía para estudiar tiempo físico, skew, drift, tolerancia y límites de sincronización. |
 | `docs/sesiones-11-15-resiliencia.md` | Alineación técnica de sesiones 11–15 y política implementada. |
 | `docs/instrucciones-laboratorio-sesion-18.md` | Guía para medir backpressure, backlog, sampling y colas bounded. |
 | `docs/instrucciones-laboratorio-sesion-17.md` | Guía para comparar request/response, pub/sub, colas y streaming. |
@@ -344,6 +392,6 @@ Un avance de sesión está completo cuando cumple estas condiciones:
 
 ## Próximo paso
 
-El siguiente trabajo es la **Sesión 19: Naming, identificadores y discovery**.
+El siguiente trabajo es la **Sesión 22: sincronización de relojes: visión general y efectos en sistemas distribuidos**.
 
-Ahí se ordenarán identificadores, nombres de eventos, servicios y claves técnicas para mejorar trazabilidad y consistencia operativa.
+Ahí se va a estudiar cómo estimar offset y delay, qué ocurre con redes asimétricas, cómo corregir relojes y por qué sincronizar ayuda pero no prueba orden global perfecto.

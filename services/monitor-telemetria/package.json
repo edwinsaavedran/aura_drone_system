@@ -7,6 +7,7 @@
     "start": "node src/server.js",
     "lab:telemetry-stream": "node src/telemetry-stream-simulator.js",
     "lab:telemetry-pressure": "node src/telemetry-pressure-lab.js",
+    "lab:physical-time": "node src/physical-time-lab.js",
     "test": "node --test"
   },
   "dependencies": {
