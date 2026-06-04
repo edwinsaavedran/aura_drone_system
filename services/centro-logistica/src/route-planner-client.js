@@ -1,9 +1,16 @@
 const DEFAULT_TIMEOUT_MS = 500;
 const DEFAULT_RETRIES = 2;
 const DEFAULT_BACKOFF_MS = 50;
+const DEFAULT_BASE_URL = "http://planificador-rutas:8000";
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function calculateBackoffDelay(attempt, backoffMs, randomFn = Math.random) {
+  const exponentialDelay = backoffMs * (2 ** (attempt - 1));
+  const jitter = Math.floor(randomFn() * backoffMs);
+  return exponentialDelay + jitter;
 }
 
 function parsePositiveInteger(value, fallback) {
@@ -13,10 +20,11 @@ function parsePositiveInteger(value, fallback) {
 
 function getPlannerConfig(overrides = {}) {
   return {
-    baseUrl: overrides.baseUrl || process.env.PLANIFICADOR_RUTAS_URL || "http://127.0.0.1:8003",
+    baseUrl: overrides.baseUrl || process.env.PLANIFICADOR_RUTAS_URL || DEFAULT_BASE_URL,
     timeoutMs: parsePositiveInteger(overrides.timeoutMs ?? process.env.ROUTE_PLANNER_TIMEOUT_MS, DEFAULT_TIMEOUT_MS),
     retries: parsePositiveInteger(overrides.retries ?? process.env.ROUTE_PLANNER_RETRIES, DEFAULT_RETRIES),
     backoffMs: parsePositiveInteger(overrides.backoffMs ?? process.env.ROUTE_PLANNER_BACKOFF_MS, DEFAULT_BACKOFF_MS),
+    randomFn: overrides.randomFn || Math.random,
     sleepFn: overrides.sleepFn || sleep
   };
 }
@@ -65,6 +73,15 @@ async function planRouteForOrder(order, configOverrides = {}) {
   const url = `${config.baseUrl.replace(/\/$/, "")}/api/v1/routes/plan`;
   const maxAttempts = config.retries + 1;
   const errors = [];
+  const headers = { "content-type": "application/json" };
+
+  if (configOverrides.correlationId) {
+    headers["x-correlation-id"] = configOverrides.correlationId;
+  }
+
+  if (configOverrides.idempotencyKey) {
+    headers["idempotency-key"] = configOverrides.idempotencyKey;
+  }
 
   for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
     try {
@@ -72,7 +89,7 @@ async function planRouteForOrder(order, configOverrides = {}) {
         url,
         {
           method: "POST",
-          headers: { "content-type": "application/json" },
+          headers,
           body: JSON.stringify(toPlannerPayload(order))
         },
         config.timeoutMs
@@ -118,7 +135,7 @@ async function planRouteForOrder(order, configOverrides = {}) {
     }
 
     if (attempt < maxAttempts) {
-      await config.sleepFn(config.backoffMs * attempt);
+      await config.sleepFn(calculateBackoffDelay(attempt, config.backoffMs, config.randomFn));
     }
   }
 
@@ -130,6 +147,7 @@ async function planRouteForOrder(order, configOverrides = {}) {
 }
 
 module.exports = {
+  calculateBackoffDelay,
   getPlannerConfig,
   planRouteForOrder,
   toPlannerPayload

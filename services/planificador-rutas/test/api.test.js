@@ -51,6 +51,27 @@ test("planifica una ruta simple por cercanía", async () => {
   );
 });
 
+test("refleja correlation id y acepta idempotency key sin estado", async () => {
+  const payload = {
+    origin: { x: 0, y: 0 },
+    deliveries: [{ id: "pedido-pc02", location: { x: 1, y: 1 } }]
+  };
+
+  const response = await fetch(`${baseUrl}/api/v1/routes/plan`, {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      "x-correlation-id": "corr-pc02-planner",
+      "idempotency-key": "route-plan-intent-001"
+    },
+    body: JSON.stringify(payload)
+  });
+
+  assert.equal(response.status, 200);
+  assert.equal(response.headers.get("x-correlation-id"), "corr-pc02-planner");
+  assert.equal((await response.json()).total_stops, 1);
+});
+
 test("responde 400 cuando faltan entregas", async () => {
   const response = await fetch(`${baseUrl}/api/v1/routes/plan`, {
     method: "POST",

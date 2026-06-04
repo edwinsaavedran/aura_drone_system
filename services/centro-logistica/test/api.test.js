@@ -3,6 +3,7 @@ const assert = require("node:assert/strict");
 const express = require("express");
 const { createApp } = require("../src/server");
 const repository = require("../src/repository");
+const { calculateBackoffDelay } = require("../src/route-planner-client");
 
 let server;
 let baseUrl;
@@ -91,6 +92,66 @@ test("crea orden y la lista", async () => {
   assert.equal(orders[0].status, "pendiente");
 });
 
+test("genera correlation id si falta y lo devuelve en la respuesta", async () => {
+  const response = await fetch(`${baseUrl}/api/v1/orders`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      pickup_location: { latitude: -34.6037, longitude: -58.3816 },
+      destination: { latitude: -34.6158, longitude: -58.4333 }
+    })
+  });
+
+  assert.equal(response.status, 201);
+  assert.match(response.headers.get("x-correlation-id"), /^[0-9a-f-]{36}$/i);
+});
+
+test("propaga correlation id e idempotency key al planificador-rutas", async () => {
+  let observedHeaders;
+  const observedPlanner = await listen(createPlannerStub((req, res) => {
+    observedHeaders = {
+      correlationId: req.get("X-Correlation-Id"),
+      idempotencyKey: req.get("Idempotency-Key")
+    };
+    res.json(plannerSuccessResponse(req));
+  }));
+
+  const observedApp = createApp({
+    routePlanner: {
+      baseUrl: observedPlanner.url,
+      timeoutMs: 50,
+      retries: 0,
+      backoffMs: 1
+    }
+  });
+  const observedServer = await listen(observedApp);
+
+  try {
+    const response = await fetch(`${observedServer.url}/api/v1/orders`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        "x-correlation-id": "corr-pc02-001",
+        "idempotency-key": "order-intent-pc02-001"
+      },
+      body: JSON.stringify({
+        pickup_location: { latitude: -34.6037, longitude: -58.3816 },
+        destination: { latitude: -34.6158, longitude: -58.4333 }
+      })
+    });
+
+    assert.equal(response.status, 201);
+    assert.equal(response.headers.get("x-correlation-id"), "corr-pc02-001");
+    assert.deepEqual(observedHeaders, {
+      correlationId: "corr-pc02-001",
+      idempotencyKey: "order-intent-pc02-001"
+    });
+  } finally {
+    await new Promise((resolve, reject) => observedServer.runningServer.close((err) => (err ? reject(err) : resolve())));
+    await new Promise((resolve, reject) => observedPlanner.runningServer.close((err) => (err ? reject(err) : resolve())));
+  }
+});
+
 test("valida payload incompleto", async () => {
   const response = await fetch(`${baseUrl}/api/v1/orders`, {
     method: "POST",
@@ -121,6 +182,7 @@ test("reintenta con backoff cuando planificador-rutas excede timeout", async () 
       timeoutMs: 20,
       retries: 1,
       backoffMs: 7,
+      randomFn: () => 0,
       sleepFn: async (ms) => {
         observedBackoff += ms;
       }
@@ -147,6 +209,12 @@ test("reintenta con backoff cuando planificador-rutas excede timeout", async () 
     await new Promise((resolve, reject) => retryServer.runningServer.close((err) => (err ? reject(err) : resolve())));
     await new Promise((resolve, reject) => slowPlanner.runningServer.close((err) => (err ? reject(err) : resolve())));
   }
+});
+
+test("calcula backoff exponencial con jitter determinista", () => {
+  assert.equal(calculateBackoffDelay(1, 10, () => 0), 10);
+  assert.equal(calculateBackoffDelay(2, 10, () => 0.5), 25);
+  assert.equal(calculateBackoffDelay(3, 10, () => 0.99), 49);
 });
 
 test("no persiste orden cuando planificador-rutas falla definitivamente", async () => {

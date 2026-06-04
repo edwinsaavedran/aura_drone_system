@@ -30,6 +30,7 @@ El proyecto está trabajado hasta **Sesión 18**.
 | Semánticas de entrega | Consumidor in-memory de `EntregaCompletada` con idempotencia por `eventId` y estado de negocio. |
 | Patrones de comunicación | Laboratorio in-memory para request/response, pub/sub, cola FIFO y streaming. |
 | Backpressure | Laboratorio in-memory para presión de streaming, cola bounded, backlog, drops/sampling y retry. |
+| PC02 | Solución docente de resiliencia, eventos, backpressure, naming y discovery en `docs/pc2-respuestas.md`. |
 | Tests | Suites por servicio con `npm test`. |
 | Laboratorio Sesión 15 | Documentado en `docs/instrucciones-laboratorio-sesion-15.md`. |
 | Laboratorio Sesión 16 | Documentado en `docs/instrucciones-laboratorio-sesion-16.md`. |
@@ -88,6 +89,48 @@ cd ../planificador-rutas && npm test
 cd ../monitor-telemetria && npm test
 cd ../gestor-flota && npm test
 ```
+
+## PC02: solución y evidencia
+
+La solución de PC02 integra cuatro frentes: resiliencia síncrona, consumo idempotente de `EntregaCompletada`, evidencia de backpressure y revisión de naming/discovery.
+
+Guía docente completa:
+
+```text
+docs/pc2-respuestas.md
+```
+
+Verificación mínima de PC02:
+
+```bash
+cd services/centro-logistica
+npm test
+```
+
+```bash
+cd services/planificador-rutas
+npm test
+```
+
+Evidencia operacional recomendada:
+
+```bash
+cd services/centro-logistica
+npm run lab:delivery-events duplicate-event
+npm run lab:delivery-events same-mission-different-event
+npm run lab:delivery-events wrong-mission
+npm run lab:backpressure -- --controlled
+npm run lab:operational-pressure -- --controlled
+```
+
+Puntos que debe poder defender la entrega:
+
+| Fase PC02 | Evidencia |
+|---|---|
+| Resiliencia | Timeout, retry limitado, backoff exponencial con jitter, clasificación retryable/no retryable y propagación de `X-Correlation-Id`/`Idempotency-Key`. |
+| `EntregaCompletada` | Evento nuevo procesado, duplicado por `eventId` ignorado, evento distinto sobre misión ya completada sin efecto duplicado, misión inválida rechazada. |
+| Backpressure | Métricas `produced/sent`, `accepted`, `processed`, `dropped/sampled`, `buffered/backlog/queueDepth`, `consumerLag/lag`, `rejected` y `retry`. |
+| Naming/discovery | `PLANIFICADOR_RUTAS_URL` para comunicación inter-servicio y nombres consistentes de eventos/tópicos en labs. |
 
 ## Cronograma de la Unidad 2
 
@@ -269,6 +312,7 @@ docs/instrucciones-laboratorio-sesion-15.md
 | Documento | Propósito |
 |---|---|
 | `docs/unidad-2-backlog.md` | Backlog y cronograma detallado de sesiones 11–20. |
+| `docs/pc2-respuestas.md` | Solución docente de PC02 con comandos, evidencia, decisiones, limitaciones y checklist de revisión. |
 | `docs/sesiones-11-15-resiliencia.md` | Alineación técnica de sesiones 11–15 y política implementada. |
 | `docs/instrucciones-laboratorio-sesion-18.md` | Guía para medir backpressure, backlog, sampling y colas bounded. |
 | `docs/instrucciones-laboratorio-sesion-17.md` | Guía para comparar request/response, pub/sub, colas y streaming. |

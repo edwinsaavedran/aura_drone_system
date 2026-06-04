@@ -8,6 +8,9 @@ function createRoutes(options = {}) {
   const router = express.Router();
 
   router.post("/api/v1/orders", async (req, res) => {
+    const correlationId = req.get("X-Correlation-Id") || randomUUID();
+    res.set("X-Correlation-Id", correlationId);
+
     const validationError = validateOrder(req.body);
     if (validationError) {
       return res.status(400).json({ detail: validationError });
@@ -27,7 +30,11 @@ function createRoutes(options = {}) {
     };
 
     try {
-      const routePlannerResult = await planRouteForOrder(draftOrder, options.routePlanner);
+      const routePlannerResult = await planRouteForOrder(draftOrder, {
+        ...options.routePlanner,
+        correlationId,
+        idempotencyKey
+      });
       const created = repository.createOrder({ ...req.body, id: draftOrder.id }, {
         idempotencyKey,
         routePlan: routePlannerResult.plan,

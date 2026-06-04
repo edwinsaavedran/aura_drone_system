@@ -45,7 +45,7 @@ services/centro-logistica/test/api.test.js
 |---|---|
 | Timeout | Toda llamada a `planificador-rutas` debe tener límite de espera por intento (`ROUTE_PLANNER_TIMEOUT_MS`). |
 | Retry | Reintentar solo errores transitorios: timeout, `408`, `429` y `5xx`. |
-| Backoff | Esperar antes de cada reintento para no saturar más al planificador (`ROUTE_PLANNER_BACKOFF_MS * intento`). |
+| Backoff | Esperar antes de cada reintento para no saturar más al planificador; PC02 usa backoff exponencial con jitter. |
 | Error no retryable | No reintentar errores de negocio como zona inválida, destino no alcanzable o payload inválido. |
 | Idempotencia | Usar `Idempotency-Key` para que repetir la misma intención no cree otra misión/orden. |
 | Persistencia segura | Crear la orden solo después de obtener una ruta válida. Si el resultado es incierto o fallido, no crear una misión a ciegas. |
@@ -75,7 +75,7 @@ ROUTE_PLANNER_RETRIES=2
 ROUTE_PLANNER_BACKOFF_MS=100
 ```
 
-Si ejecutás servicios manualmente en terminales separadas, levantá `centro-logistica` así:
+El valor por defecto del cliente apunta al nombre de servicio de Docker Compose. Si ejecutás servicios manualmente en terminales separadas, sobrescribí la URL local así:
 
 ```bash
 cd services/centro-logistica
@@ -103,10 +103,10 @@ Resultado esperado:
 
 | Servicio | Resultado esperado |
 |---|---|
-| `centro-logistica` | `7/7` tests pasando |
-| `planificador-rutas` | `4/4` tests pasando |
-| `monitor-telemetria` | `3/3` tests pasando |
-| `gestor-flota` | `3/3` tests pasando |
+| `centro-logistica` | Suite completa pasando |
+| `planificador-rutas` | Suite completa pasando |
+| `monitor-telemetria` | Suite completa pasando |
+| `gestor-flota` | Suite completa pasando |
 
 ## Escenario 1 — Camino feliz
 

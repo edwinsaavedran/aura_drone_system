@@ -14,6 +14,7 @@ venv/
 # Publish only lab instructions from docs/
 docs/*
 !docs/instrucciones-laboratorio-*.md
+!docs/pc2-respuestas.md
 
 # Environment and secrets
 .env
