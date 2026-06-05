@@ -8,6 +8,7 @@
     "lab:telemetry-stream": "node src/telemetry-stream-simulator.js",
     "lab:telemetry-pressure": "node src/telemetry-pressure-lab.js",
     "lab:physical-time": "node src/physical-time-lab.js",
+    "lab:clock-sync": "node src/clock-sync-lab.js",
     "test": "node --test"
   },
   "dependencies": {

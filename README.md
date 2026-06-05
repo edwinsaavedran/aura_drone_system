@@ -6,7 +6,7 @@ El objetivo no es “hacer endpoints porque sí”. El objetivo es que el estudi
 
 ## Estado actual
 
-El estado actual del repo es **Unidad 2 cerrada con PC02** y **Unidad 3 iniciada con la Sesión 21**.
+El estado actual del repo es **Unidad 2 cerrada con PC02** y **Unidad 3 iniciada con la Sesión 22 implementada**.
 
 Esto significa que el proyecto ya no debe leerse solo como una secuencia de laboratorios. La **Práctica Calificada 02** cierra resiliencia, semánticas de entrega, backpressure, patrones de comunicación, naming y discovery básico. La **Unidad 3** empieza desde ese piso para estudiar tiempo, orden, causalidad y coordinación distribuida.
 
@@ -19,7 +19,7 @@ docs/pc2-respuestas.md     # solución docente, evidencia y decisiones técnicas
 
 | Área | Estado |
 |---|---|
-| Hito vigente | **PC02 cerrada; Unidad 3 iniciada con Sesión 21**. |
+| Hito vigente | **PC02 cerrada; Unidad 3 iniciada con Sesión 22 implementada**. |
 | Arquitectura base | Alineada y documentada para sesiones 11–18. |
 | REST v1 | Implementado en `gestor-flota`, `centro-logistica` y `planificador-rutas`. |
 | gRPC | Implementado en `monitor-telemetria`. |
@@ -28,7 +28,7 @@ docs/pc2-respuestas.md     # solución docente, evidencia y decisiones técnicas
 | Patrones de comunicación | Laboratorio in-memory para request/response, pub/sub, cola FIFO y streaming. |
 | Backpressure | Laboratorio in-memory para presión de streaming, cola bounded, backlog, drops/sampling y retry. |
 | Naming/discovery | Comunicación inter-servicio mediante configuración y nombres lógicos en Docker Compose. |
-| Tiempo físico | Laboratorio determinístico en `monitor-telemetria` para wall-clock, monotonic clock, skew, drift y tolerancia. |
+| Tiempo físico y sincronización | Laboratorios determinísticos en `monitor-telemetria` para wall-clock, monotonic clock, skew, drift, tolerancia, offset, delay, corrección y confianza. |
 | Tests | Suites por servicio con `npm test`. |
 
 ## Qué queda construido al cierre de PC02
@@ -168,9 +168,9 @@ La Unidad 3 parte de una pregunta incómoda pero necesaria: si cada nodo observa
 
 | Hito | Tema central | Entregables | Aporte al proyecto final |
 |---|---|---|---|
-| **21** | Tiempo físico, skew, drift y límites de sincronización | Laboratorio `lab:physical-time`, tests y guía de laboratorio. | Demuestra que los timestamps físicos son útiles como metadatos, pero no prueban orden global ni reemplazan relojes monotónicos para duraciones. |
-| 22 | Sincronización de relojes: visión general y efectos en sistemas distribuidos | Próximo laboratorio didáctico. | Mostrará cómo estimar offset/delay, aplicar correcciones y evaluar confianza sin vender sincronización como orden global perfecto. |
-| 23 | Lamport clocks y orden parcial | Laboratorio posterior de relojes lógicos. | Permitirá razonar sobre orden parcial sin confiar solo en hora física. |
+| 21 | Tiempo físico, skew, drift y límites de sincronización | Laboratorio `lab:physical-time`, tests y guía de laboratorio. | Demuestra que los timestamps físicos son útiles como metadatos, pero no prueban orden global ni reemplazan relojes monotónicos para duraciones. |
+| **22** | Sincronización de relojes: visión general y efectos en sistemas distribuidos | Laboratorio `lab:clock-sync`, tests y guía de laboratorio. | Muestra cómo estimar offset/delay, aplicar correcciones y evaluar confianza sin vender sincronización como orden global perfecto. |
+| 23 | Lamport clocks y orden parcial | Siguiente laboratorio de relojes lógicos. | Permitirá razonar sobre orden parcial sin confiar solo en hora física. |
 | 24 | Vector clocks y causalidad | Laboratorio posterior de causalidad. | Permitirá distinguir eventos causalmente relacionados de eventos concurrentes. |
 | 25 | Exclusión mutua distribuida | Laboratorio posterior de coordinación de acceso a recurso compartido. | Evitará que múltiples nodos ejecuten una sección crítica simultáneamente. |
 | 26 | Locks distribuidos, leases y riesgos operativos | Laboratorio posterior de locks, ownership, expiración y renovación. | Mostrará por qué un lock distribuido necesita tiempo, leases y manejo de fallas. |
@@ -212,7 +212,38 @@ Regla de trabajo por sesión:
 4. implementación mínima;
 5. evidencia para defender la decisión.
 
-## Base didáctica actual: Sesión 21
+## Base didáctica actual: Sesión 22
+
+La Sesión 22 muestra qué aporta la sincronización de relojes y dónde están sus límites:
+
+```text
+NTP-style timestamps: t0, t1, t2, t3
+roundTripDelayMs: latencia ida/vuelta descontando procesamiento remoto
+estimatedOffsetMs: diferencia estimada entre reloj local y referencia
+asymmetric delay: la red puede sesgar la estimación
+step vs slew: corrección abrupta o gradual
+stale sync: la confianza cae cuando crece el error estimado
+```
+
+Comandos principales:
+
+```bash
+cd services/monitor-telemetria
+npm run lab:clock-sync -- --normal
+npm run lab:clock-sync -- --asymmetric-delay
+npm run lab:clock-sync -- --correction-policy
+npm run lab:clock-sync -- --stale-sync
+npm run lab:clock-sync -- --telemetry-impact
+npm run lab:clock-sync -- --scenario-analysis
+```
+
+Guía completa:
+
+```text
+docs/instrucciones-laboratorio-sesion-22.md
+```
+
+## Laboratorio anterior: Sesión 21
 
 La Sesión 21 muestra los límites prácticos del tiempo físico en sistemas distribuidos:
 
@@ -372,6 +403,7 @@ docs/instrucciones-laboratorio-sesion-15.md
 | `docs/unidad-3-backlog.md` | Roadmap estratégico de sesiones 21–30 sobre tiempo, orden, causalidad, consenso y consistencia. |
 | `docs/unidad-2-backlog.md` | Backlog y cronograma detallado de sesiones 11–20. |
 | `docs/pc2-respuestas.md` | Solución docente de PC02 con comandos, evidencia, decisiones, limitaciones y checklist de revisión. |
+| `docs/instrucciones-laboratorio-sesion-22.md` | Guía para estudiar sincronización de relojes, offset, delay, corrección, stale sync y confianza. |
 | `docs/instrucciones-laboratorio-sesion-21.md` | Guía para estudiar tiempo físico, skew, drift, tolerancia y límites de sincronización. |
 | `docs/sesiones-11-15-resiliencia.md` | Alineación técnica de sesiones 11–15 y política implementada. |
 | `docs/instrucciones-laboratorio-sesion-18.md` | Guía para medir backpressure, backlog, sampling y colas bounded. |
@@ -392,6 +424,6 @@ Un avance de sesión está completo cuando cumple estas condiciones:
 
 ## Próximo paso
 
-El siguiente trabajo es la **Sesión 22: sincronización de relojes: visión general y efectos en sistemas distribuidos**.
+El siguiente trabajo es la **Sesión 23: Lamport clocks y orden parcial**.
 
-Ahí se va a estudiar cómo estimar offset y delay, qué ocurre con redes asimétricas, cómo corregir relojes y por qué sincronizar ayuda pero no prueba orden global perfecto.
+Ahí se va a estudiar cómo razonar sobre “ocurrió antes” con relojes lógicos, sin depender solo de timestamps físicos sincronizados.

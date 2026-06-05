@@ -11,7 +11,7 @@ Fuente de verdad académica: `docs/GESTION SID 2026 I.pdf`.
 | Sesión | Tema | Entregable esperado | Aporte a AURA |
 |---|---|---|---|
 | 21 | Tiempo físico, skew, drift y límites de sincronización | Laboratorio determinístico en `monitor-telemetria` y guía de análisis. | Muestra por qué los timestamps físicos ayudan, pero no prueban orden global. |
-| 22 | Sincronización de relojes: visión general y efectos en sistemas distribuidos | Laboratorio determinístico de estimación de offset, delay, corrección y confianza. | Explica qué mejora la sincronización física y qué límites mantiene. |
+| 22 | Sincronización de relojes: visión general y efectos en sistemas distribuidos | Laboratorio determinístico `lab:clock-sync`, tests y guía de análisis. | Explica qué mejora la sincronización física y qué límites mantiene. |
 | 23 | Lamport clocks y orden parcial | Lab de eventos ordenados por contador lógico. | Permite razonar sobre “ocurrió antes” sin depender solo de hora física. |
 | 24 | Vector clocks y causalidad | Comparación de causalidad, concurrencia y conflicto. | Distingue eventos causalmente relacionados de eventos concurrentes. |
 | 25 | Exclusión mutua distribuida | Taller comparativo de enfoques y simulación de acceso a recurso compartido. | Evita que múltiples nodos ejecuten una sección crítica a la vez. |
@@ -37,6 +37,13 @@ Cada sesión debe dejar:
 - No vender sincronización física como solución completa de orden global.
 - No adelantar Lamport a la Sesión 22: según la fuente oficial, primero se trabaja sincronización de relojes.
 
+## Evidencia implementada
+
+| Sesión | Evidencia |
+|---|---|
+| 21 | `services/monitor-telemetria/src/physical-time-lab.js`, `services/monitor-telemetria/test/physical-time-lab.test.js`, `docs/instrucciones-laboratorio-sesion-21.md`. |
+| 22 | `services/monitor-telemetria/src/clock-sync-lab.js`, `services/monitor-telemetria/test/clock-sync-lab.test.js`, `docs/instrucciones-laboratorio-sesion-22.md`, script `lab:clock-sync`. |
+
 ## Siguiente paso
 
-Implementar la Sesión 22 con sincronización de relojes: estimación de offset, delay, efectos de corrección y confianza de timestamps antes de avanzar a Lamport en la Sesión 23.
+Implementar la Sesión 23 con relojes de Lamport y orden parcial. La secuencia oficial se mantiene: Sesión 21 tiempo físico, Sesión 22 sincronización de relojes, Sesión 23 Lamport.
