@@ -221,6 +221,15 @@ Comando del caso guiado:
 npm run lab:clock-sync -- --scenario-analysis
 ```
 
+También puedes visualizar este mismo caso en la plataforma educativa de observabilidad:
+
+```bash
+cd ../observability-platform
+npm start
+```
+
+Abre `http://localhost:8010` y ejecuta el análisis de escenarios para ver ventanas de incertidumbre, decisiones y JSON estructurado.
+
 ### Situación base
 
 AURA opera varios drones durante una campaña de alta demanda. En una ventana muy corta se observan estos eventos:

@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   gestor-flota:
     image: node:22-alpine
@@ -43,3 +41,13 @@ services:
       - "8003:8000"
     volumes:
       - ./services/planificador-rutas:/app
+
+  observability-platform:
+    image: node:22-alpine
+    working_dir: /services/observability-platform
+    command: npm start
+    ports:
+      - "8010:8010"
+    volumes:
+      - ./services/observability-platform:/services/observability-platform:ro
+      - ./services/monitor-telemetria/src:/services/monitor-telemetria/src:ro

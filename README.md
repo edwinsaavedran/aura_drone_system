@@ -6,7 +6,7 @@ El objetivo no es “hacer endpoints porque sí”. El objetivo es que el estudi
 
 ## Estado actual
 
-El estado actual del repo es **Unidad 2 cerrada con PC02** y **Unidad 3 iniciada con la Sesión 22 implementada**.
+El estado actual del repo es **Unidad 2 cerrada con PC02** y **Unidad 3 consolidada hasta la Sesión 26 implementada**.
 
 Esto significa que el proyecto ya no debe leerse solo como una secuencia de laboratorios. La **Práctica Calificada 02** cierra resiliencia, semánticas de entrega, backpressure, patrones de comunicación, naming y discovery básico. La **Unidad 3** empieza desde ese piso para estudiar tiempo, orden, causalidad y coordinación distribuida.
 
@@ -19,7 +19,7 @@ docs/pc2-respuestas.md     # solución docente, evidencia y decisiones técnicas
 
 | Área | Estado |
 |---|---|
-| Hito vigente | **PC02 cerrada; Unidad 3 iniciada con Sesión 22 implementada**. |
+| Hito vigente | **PC02 cerrada; Unidad 3 consolidada hasta Sesión 26 implementada**. |
 | Arquitectura base | Alineada y documentada para sesiones 11–18. |
 | REST v1 | Implementado en `gestor-flota`, `centro-logistica` y `planificador-rutas`. |
 | gRPC | Implementado en `monitor-telemetria`. |
@@ -28,7 +28,7 @@ docs/pc2-respuestas.md     # solución docente, evidencia y decisiones técnicas
 | Patrones de comunicación | Laboratorio in-memory para request/response, pub/sub, cola FIFO y streaming. |
 | Backpressure | Laboratorio in-memory para presión de streaming, cola bounded, backlog, drops/sampling y retry. |
 | Naming/discovery | Comunicación inter-servicio mediante configuración y nombres lógicos en Docker Compose. |
-| Tiempo físico y sincronización | Laboratorios determinísticos en `monitor-telemetria` para wall-clock, monotonic clock, skew, drift, tolerancia, offset, delay, corrección y confianza. |
+| Tiempo físico, sincronización, causalidad y coordinación | Laboratorios determinísticos en `monitor-telemetria` para wall-clock, monotonic clock, skew, drift, tolerancia, offset, delay, corrección, confianza, Lamport clocks, vector clocks, `happened-before`, concurrencia, exclusión mutua distribuida, locks, leases, TTL, expiración y stale owner. |
 | Tests | Suites por servicio con `npm test`. |
 
 ## Qué queda construido al cierre de PC02
@@ -99,6 +99,7 @@ Puntos que debe poder defender la entrega:
 | `services/centro-logistica` | `8002` | Crear órdenes y coordinar planificación. | REST `/api/v1/orders` |
 | `services/planificador-rutas` | `8003` | Calcular rutas para entregas. | REST `/api/v1/routes/plan` |
 | `services/monitor-telemetria` | `50051` | Recibir telemetría de drones. | gRPC `TelemetryService` |
+| `services/observability-platform` | `8010` | Visualizar laboratorios educativos de observabilidad. | HTTP `/api/labs` |
 
 ## Ejecución rápida
 
@@ -110,15 +111,31 @@ Desde la raíz del proyecto:
 docker compose up --build
 ```
 
+La plataforma educativa de observabilidad queda disponible en:
+
+```text
+http://localhost:8010
+```
+
 Validación rápida:
 
 ```bash
 curl -i http://localhost:8001/health
 curl -i http://localhost:8002/health
 curl -i http://localhost:8003/health
+curl -i http://localhost:8010/health
 ```
 
 > Nota: `centro-logistica` usa `PLANIFICADOR_RUTAS_URL=http://planificador-rutas:8000` dentro de Docker Compose.
+
+Smoke test de la plataforma de observabilidad:
+
+```bash
+cd services/observability-platform
+npm run smoke
+```
+
+El smoke test valida `/health`, `/api/labs`, los modos y ejecuciones principales de `physical-time`, `clock-sync`, `lamport-ordering`, `vector-clocks`, `mutual-exclusion` y `distributed-locks`, `/` y `/app.js` contra `http://localhost:8010`.
 
 ### Por servicio
 
@@ -142,6 +159,7 @@ cd services/centro-logistica && npm test
 cd ../planificador-rutas && npm test
 cd ../monitor-telemetria && npm test
 cd ../gestor-flota && npm test
+cd ../observability-platform && npm test
 ```
 
 ## Ruta didáctica de la Unidad 2
@@ -170,10 +188,10 @@ La Unidad 3 parte de una pregunta incómoda pero necesaria: si cada nodo observa
 |---|---|---|---|
 | 21 | Tiempo físico, skew, drift y límites de sincronización | Laboratorio `lab:physical-time`, tests y guía de laboratorio. | Demuestra que los timestamps físicos son útiles como metadatos, pero no prueban orden global ni reemplazan relojes monotónicos para duraciones. |
 | **22** | Sincronización de relojes: visión general y efectos en sistemas distribuidos | Laboratorio `lab:clock-sync`, tests y guía de laboratorio. | Muestra cómo estimar offset/delay, aplicar correcciones y evaluar confianza sin vender sincronización como orden global perfecto. |
-| 23 | Lamport clocks y orden parcial | Siguiente laboratorio de relojes lógicos. | Permitirá razonar sobre orden parcial sin confiar solo en hora física. |
-| 24 | Vector clocks y causalidad | Laboratorio posterior de causalidad. | Permitirá distinguir eventos causalmente relacionados de eventos concurrentes. |
-| 25 | Exclusión mutua distribuida | Laboratorio posterior de coordinación de acceso a recurso compartido. | Evitará que múltiples nodos ejecuten una sección crítica simultáneamente. |
-| 26 | Locks distribuidos, leases y riesgos operativos | Laboratorio posterior de locks, ownership, expiración y renovación. | Mostrará por qué un lock distribuido necesita tiempo, leases y manejo de fallas. |
+| **23** | Lamport clocks y orden parcial | Laboratorio `lab:lamport-ordering`, tests, guía y visualización en observability-platform. | Permite razonar sobre orden parcial y `happened-before` sin confiar solo en hora física. |
+| **24** | Vector clocks y causalidad | Laboratorio `lab:vector-clocks`, tests, guía y visualización en observability-platform. | Distingue eventos causalmente relacionados de eventos concurrentes con más precisión. |
+| **25** | Exclusión mutua distribuida | Laboratorio `lab:mutual-exclusion`, tests, guía y visualización en observability-platform. | Modela de forma determinística cómo arbitrar el acceso a una sección crítica compartida; no es una implementación productiva de mutex distribuido. |
+| **26** | Locks distribuidos, leases y riesgos operativos | Laboratorio `lab:distributed-locks`, tests, guía y visualización en observability-platform. | Muestra por qué un lock distribuido necesita ownership temporal, TTL, expiración, renovación prudente y manejo de dueños stale. |
 | 27 | Elección de líder y failure detectors | Laboratorio posterior de liderazgo ante fallas parciales. | Permitirá decidir quién coordina cuando hay múltiples nodos candidatos. |
 | 28 | Coordinación distribuida en escenarios reales | Diseño aplicado sobre escenarios AURA con múltiples nodos. | Integrará tiempo, causalidad, locks, líder y fallas en una decisión defendible. |
 | 29 | Laboratorio integrador de sincronización y coordinación | Simulador/laboratorio integrador. | Preparará evidencia técnica para PC3. |
@@ -212,7 +230,164 @@ Regla de trabajo por sesión:
 4. implementación mínima;
 5. evidencia para defender la decisión.
 
-## Base didáctica actual: Sesión 22
+## Base didáctica actual: Sesiones 21, 22, 23, 24, 25 y 26
+
+La plataforma de observabilidad expone seis laboratorios conectados:
+
+- **Sesión 21 — Tiempo físico:** muestra wall-clock, monotonic clock, skew, drift y ventanas de tolerancia.
+- **Sesión 22 — Sincronización de relojes:** construye sobre esa base para estimar offset/delay, aplicar correcciones y evaluar confianza.
+- **Sesión 23 — Lamport clocks:** usa relojes lógicos para razonar sobre `happened-before`, concurrencia y desempates determinísticos.
+- **Sesión 24 — Vector clocks:** compara vectores para distinguir causalidad, igualdad y concurrencia incomparables.
+- **Sesión 25 — Exclusión mutua distribuida:** usa una simulación educativa con arbitraje determinístico por timestamp lógico y `nodeId` para estudiar una sección crítica compartida, sin presentarse como mutex distribuido productivo.
+- **Sesión 26 — Locks distribuidos y leases:** modela ownership temporal con TTL, expiración, renovación con jitter, stale owner y advertencia de fencing como evidencia.
+
+La Sesión 26 consolida el paso de exclusión mutua base a ownership temporal:
+
+```text
+Lamport local event: counter = counter + 1
+Lamport send: counter = counter + 1; adjuntar messageClock
+Lamport receive: counter = max(localCounter, messageClock) + 1
+happened-before: programa local o send -> receive
+concurrent events: sin relación causal directa
+tie-break by nodeId: orden estable de presentación, no causalidad
+Vector local/send: VC[node] = VC[node] + 1
+Vector receive: VC = max(local, message) por componente; luego VC[node]++
+vector comparison: before | after | equal | concurrent
+mutex request order: logicalTimestamp asc, then nodeId asc
+critical section safety: cero ventanas solapadas para el mismo recurso
+lease ownership: owner + acquiredAt + leaseDeadline
+leaseDeadline: acquiredAt + ttlMs
+stale owner: acción posterior a expiredAt o con fencingToken anterior
+fencing token: evidencia de generación, no infraestructura completa en esta sesión
+```
+
+Comandos principales:
+
+```bash
+cd services/monitor-telemetria
+npm run lab:lamport-ordering -- --causal-chain
+npm run lab:lamport-ordering -- --concurrent-events
+npm run lab:lamport-ordering -- --merge-and-tie-break
+npm run lab:vector-clocks -- --causal-chain
+npm run lab:vector-clocks -- --concurrent-events
+npm run lab:vector-clocks -- --merge-and-conflict
+npm run lab:mutual-exclusion -- --contended-queue
+npm run lab:mutual-exclusion -- --fairness-rounds
+npm run lab:mutual-exclusion -- --critical-section-safety
+npm run lab:mutual-exclusion -- --delay-and-reorder
+npm run lab:distributed-locks -- --lock-acquire-and-hold
+npm run lab:distributed-locks -- --lease-expiry-and-reacquire
+npm run lab:distributed-locks -- --renewal-jitter-and-risk
+npm run lab:distributed-locks -- --stale-owner-and-fencing-warning
+```
+
+Visualización educativa:
+
+```bash
+cd services/observability-platform
+npm start
+```
+
+Luego abre `http://localhost:8010` para revisar el cockpit de observabilidad de las Sesiones 21, 22, 23, 24, 25 y 26. La Sesión 26 queda activa y la Sesión 27 queda como siguiente paso para elección de líder y failure detectors.
+
+Guías completas de la base 21-26:
+
+```text
+docs/instrucciones-laboratorio-sesion-21.md
+docs/instrucciones-laboratorio-sesion-22.md
+docs/instrucciones-laboratorio-sesion-23.md
+docs/instrucciones-laboratorio-sesion-24.md
+docs/instrucciones-laboratorio-sesion-25.md
+docs/instrucciones-laboratorio-sesion-26.md
+```
+
+Guía detallada de la Sesión 26:
+
+```text
+docs/instrucciones-laboratorio-sesion-26.md
+```
+
+Alcance explícito: la Sesión 26 no implementa elección de líder, quórum ni infraestructura completa de fencing. El `fencingToken` se usa solo como evidencia para advertir o rechazar acciones de un owner stale.
+
+## Laboratorio anterior: Sesión 25
+
+La Sesión 25 muestra un modelo educativo de arbitraje determinístico para estudiar una sección crítica compartida antes de introducir vencimiento de leases. La garantía se interpreta dentro de la simulación del laboratorio; no representa una implementación productiva de exclusión mutua distribuida:
+
+```text
+mutex request order: logicalTimestamp asc, then nodeId asc
+critical section safety del modelo: cero ventanas solapadas para el mismo recurso en la evidencia simulada
+ciclo: request -> wait/queued -> grant -> enter-critical-section -> release/exit
+```
+
+Comandos principales:
+
+```bash
+cd services/monitor-telemetria
+npm run lab:mutual-exclusion -- --contended-queue
+npm run lab:mutual-exclusion -- --fairness-rounds
+npm run lab:mutual-exclusion -- --critical-section-safety
+npm run lab:mutual-exclusion -- --delay-and-reorder
+```
+
+Guía completa:
+
+```text
+docs/instrucciones-laboratorio-sesion-25.md
+```
+
+## Laboratorio anterior: Sesión 24
+
+La Sesión 24 muestra cómo vector clocks distinguen eventos causalmente relacionados de eventos concurrentes sin inventar orden global:
+
+```text
+Vector local/send: VC[node] = VC[node] + 1
+Vector receive: VC = max(local, message) por componente; luego VC[node]++
+vector comparison: before | after | equal | concurrent
+```
+
+Comandos principales:
+
+```bash
+cd services/monitor-telemetria
+npm run lab:vector-clocks -- --causal-chain
+npm run lab:vector-clocks -- --concurrent-events
+npm run lab:vector-clocks -- --merge-and-conflict
+```
+
+Guía completa:
+
+```text
+docs/instrucciones-laboratorio-sesion-24.md
+```
+
+## Laboratorio anterior: Sesión 23
+
+La Sesión 23 muestra cómo Lamport clocks permiten razonar sobre orden parcial, concurrencia y desempates determinísticos sin vender el contador escalar como causalidad completa:
+
+```text
+local event: counter = counter + 1
+send: counter = counter + 1; adjuntar messageClock
+receive: counter = max(localCounter, messageClock) + 1
+concurrent events: sin relación causal directa
+tie-break by nodeId: orden estable de presentación, no causalidad
+```
+
+Comandos principales:
+
+```bash
+cd services/monitor-telemetria
+npm run lab:lamport-ordering -- --causal-chain
+npm run lab:lamport-ordering -- --concurrent-events
+npm run lab:lamport-ordering -- --merge-and-tie-break
+```
+
+Guía completa:
+
+```text
+docs/instrucciones-laboratorio-sesion-23.md
+```
+
+## Base previa: Sesión 22
 
 La Sesión 22 muestra qué aporta la sincronización de relojes y dónde están sus límites:
 
@@ -235,6 +410,21 @@ npm run lab:clock-sync -- --correction-policy
 npm run lab:clock-sync -- --stale-sync
 npm run lab:clock-sync -- --telemetry-impact
 npm run lab:clock-sync -- --scenario-analysis
+```
+
+Visualización educativa inicial:
+
+```bash
+cd services/observability-platform
+npm start
+```
+
+Luego abre `http://localhost:8010` para revisar el cockpit de observabilidad.
+
+También puede levantarse desde Docker Compose en la raíz del proyecto:
+
+```bash
+docker compose up --build observability-platform
 ```
 
 Guía completa:
@@ -403,7 +593,11 @@ docs/instrucciones-laboratorio-sesion-15.md
 | `docs/unidad-3-backlog.md` | Roadmap estratégico de sesiones 21–30 sobre tiempo, orden, causalidad, consenso y consistencia. |
 | `docs/unidad-2-backlog.md` | Backlog y cronograma detallado de sesiones 11–20. |
 | `docs/pc2-respuestas.md` | Solución docente de PC02 con comandos, evidencia, decisiones, limitaciones y checklist de revisión. |
+| `docs/instrucciones-laboratorio-sesion-23.md` | Guía para estudiar Lamport clocks, orden parcial, concurrencia y desempate determinístico. |
+| `docs/instrucciones-laboratorio-sesion-26.md` | Guía para estudiar locks distribuidos, leases, TTL, expiración, renovación y stale owner. |
+| `docs/instrucciones-laboratorio-sesion-25.md` | Guía para estudiar exclusión mutua distribuida, cola de requests y sección crítica. |
 | `docs/instrucciones-laboratorio-sesion-22.md` | Guía para estudiar sincronización de relojes, offset, delay, corrección, stale sync y confianza. |
+| `docs/instrucciones-laboratorio-sesion-24.md` | Guía para estudiar vector clocks, causalidad, concurrencia y conflicto. |
 | `docs/instrucciones-laboratorio-sesion-21.md` | Guía para estudiar tiempo físico, skew, drift, tolerancia y límites de sincronización. |
 | `docs/sesiones-11-15-resiliencia.md` | Alineación técnica de sesiones 11–15 y política implementada. |
 | `docs/instrucciones-laboratorio-sesion-18.md` | Guía para medir backpressure, backlog, sampling y colas bounded. |
@@ -424,6 +618,6 @@ Un avance de sesión está completo cuando cumple estas condiciones:
 
 ## Próximo paso
 
-El siguiente trabajo es la **Sesión 23: Lamport clocks y orden parcial**.
+El siguiente trabajo es la **Sesión 27: Elección de líder y failure detectors**.
 
-Ahí se va a estudiar cómo razonar sobre “ocurrió antes” con relojes lógicos, sin depender solo de timestamps físicos sincronizados.
+Ahí se va a estudiar quién coordina una acción cuando hay múltiples nodos candidatos y fallas parciales. La elección de líder, los quórums y un fencing completo siguen fuera del alcance de la Sesión 26.

@@ -4,21 +4,21 @@ const BASE_TIME_MS = Date.UTC(2026, 5, 4, 15, 0, 0);
 
 const PHYSICAL_TIME_PRESETS = {
   normal: {
-    description: "baseline clocks with small tolerated skew",
+    description: "Relojes base con skew pequeño dentro de la tolerancia",
     offsetsMs: [0, 15, -10]
   },
   skew: {
-    description: "client clocks disagree enough to invert reported order",
+    description: "Los relojes de cliente difieren lo suficiente como para invertir el orden reportado",
     offsetsMs: [120, -90, 20]
   },
   drift: {
-    description: "one node gains time on every tick",
+    description: "Un nodo adelanta su reloj en cada tick",
     startOffsetMs: 5,
     driftPerTickMs: 12,
     ticks: 6
   },
   tolerance: {
-    description: "server accepts timestamps only inside a skew window",
+    description: "El servidor acepta timestamps solo dentro de una ventana de skew",
     thresholdMs: 100,
     offsetsMs: [20, -85, 140, -160]
   }
@@ -229,12 +229,12 @@ function runPhysicalTimeLab(options = {}) {
 }
 
 function printWallClockSection(report) {
-  console.log("Wall-clock vs monotonic duration");
-  console.log(`- Real duration: ${report.realDurationMs} ms`);
-  console.log(`- Wall-clock jump: ${report.wallClockJumpMs} ms`);
-  console.log(`- Duration measured with wall clock: ${report.wallClockDurationMs} ms`);
-  console.log(`- Duration measured with monotonic clock: ${report.monotonicDurationMs} ms`);
-  console.log("Interpretation: use wall-clock timestamps for human/event metadata, not for measuring elapsed duration.");
+  console.log("Wall-clock vs duración monotónica");
+  console.log(`- Duración real: ${report.realDurationMs} ms`);
+  console.log(`- Salto de wall-clock: ${report.wallClockJumpMs} ms`);
+  console.log(`- Duración medida con wall-clock: ${report.wallClockDurationMs} ms`);
+  console.log(`- Duración medida con reloj monotónico: ${report.monotonicDurationMs} ms`);
+  console.log("Interpretación: use timestamps de wall-clock como metadatos humanos/de evento, no para medir duración transcurrida.");
 }
 
 function printEvents(events) {
@@ -246,48 +246,48 @@ function printEvents(events) {
 }
 
 function printPhysicalTimeReport(report) {
-  console.log(`Physical time lab: ${report.mode}`);
-  console.log(`Scenario: ${report.description}`);
+  console.log(`Laboratorio de tiempo físico: ${report.mode}`);
+  console.log(`Escenario: ${report.description}`);
 
   if (report.wallClock) {
     printWallClockSection(report.wallClock);
-    console.log("Event metadata with small offsets");
+    console.log("Metadatos de eventos con offsets pequeños");
     printEvents(report.events);
-    console.log("Interpretation: even healthy clocks have offset; store skew metadata instead of pretending timestamps are perfect.");
+    console.log("Interpretación: incluso los relojes saludables tienen offset; conserve metadatos de skew en lugar de tratar los timestamps como perfectos.");
     return;
   }
 
   if (report.mode === "skew") {
-    console.log("Events by actual server order:");
+    console.log("Eventos por orden real observado por el servidor:");
     console.log(`- ${report.actualOrder.join(" -> ")}`);
-    console.log("Events by clientReportedAt:");
+    console.log("Eventos por clientReportedAt:");
     console.log(`- ${report.clientReportedOrder.join(" -> ")}`);
     printEvents(report.events);
     console.log(
-      `Interpretation: clientReportedAt ${report.clientOrderInvertsActualOrder ? "inverts" : "does not invert"} actual order. Physical timestamps alone do not prove global order.`
+      `Interpretación: clientReportedAt ${report.clientOrderInvertsActualOrder ? "invierte" : "no invierte"} el orden real. Los timestamps físicos por sí solos no demuestran orden global.`
     );
     return;
   }
 
   if (report.mode === "drift") {
-    console.log(`Start offset: ${report.startOffsetMs} ms`);
-    console.log(`Drift per tick: ${report.driftPerTickMs} ms`);
+    console.log(`Offset inicial: ${report.startOffsetMs} ms`);
+    console.log(`Drift por tick: ${report.driftPerTickMs} ms`);
     report.timeline.forEach((entry) => {
       console.log(
         `- tick ${entry.tick}: clientReportedAt=${entry.clientReportedAt} serverReceivedAt=${entry.serverReceivedAt} skew=${entry.clockSkewMs}ms errorGrowth=${entry.errorGrowthMs}ms`
       );
     });
-    console.log(`Final skew: ${report.finalClockSkewMs} ms`);
-    console.log("Interpretation: synchronization is temporary; drift makes error grow between sync points.");
+    console.log(`Skew final: ${report.finalClockSkewMs} ms`);
+    console.log("Interpretación: la sincronización es temporal; el drift hace crecer el error entre puntos de sincronización.");
     return;
   }
 
   if (report.mode === "tolerance") {
-    console.log(`Tolerance window: +/- ${report.thresholdMs} ms`);
+    console.log(`Ventana de tolerancia: +/- ${report.thresholdMs} ms`);
     printEvents(report.events);
-    console.log(`Accepted: ${report.accepted}`);
-    console.log(`Rejected: ${report.rejected}`);
-    console.log("Interpretation: client timestamps can help, but only inside explicit tolerance windows and with server-side validation.");
+    console.log(`Aceptados: ${report.accepted}`);
+    console.log(`Rechazados: ${report.rejected}`);
+    console.log("Interpretación: los timestamps de cliente pueden ayudar, pero solo dentro de ventanas de tolerancia explícitas y con validación del servidor.");
   }
 }
 

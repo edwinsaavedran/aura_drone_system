@@ -1,5 +1,7 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
+const { execFileSync } = require("node:child_process");
+const path = require("node:path");
 const {
   applySlewCorrection,
   applyStepCorrection,
@@ -8,6 +10,7 @@ const {
   classifyTelemetryPackets,
   compareWithClockUncertainty,
   computeNtpExchange,
+  createClockSyncLabResult,
   createNtpTimestamps,
   evaluateAuditConfidence,
   evaluateStaleSync,
@@ -15,6 +18,8 @@ const {
   parseArgs,
   runClockSyncLab
 } = require("../src/clock-sync-lab");
+
+const clockSyncLabPath = path.join(__dirname, "..", "src", "clock-sync-lab.js");
 
 test("computes NTP round trip delay and estimated offset with four timestamps", () => {
   const exchange = computeNtpExchange({ t0: 1_000, t1: 1_120, t2: 1_130, t3: 1_090 });
@@ -126,15 +131,38 @@ test("parseArgs supports flags and positional modes", () => {
   assert.deepEqual(parseArgs(["--mode", "stale-sync"]), { mode: "stale-sync" });
   assert.deepEqual(parseArgs(["--telemetry-impact", "--tolerance-ms=75"]), { mode: "telemetry-impact", toleranceMs: 75 });
   assert.deepEqual(parseArgs(["--scenario-analysis"]), { mode: "scenario-analysis" });
+  assert.deepEqual(parseArgs(["--scenario-analysis", "--json"]), { mode: "scenario-analysis", json: true });
+  assert.deepEqual(parseArgs(["--scenario-analysis", "--timeline"]), { mode: "scenario-analysis", timeline: true });
 });
 
 test("scenario analysis does not assert battery low before mission assignment inside clock uncertainty", () => {
   const result = compareWithClockUncertainty("10:20:00.100", "10:20:00.130", 80);
 
   assert.equal(result.differenceMs, 30);
+  assert.equal(result.combinedUncertaintyMs, 160);
   assert.equal(result.canEstablishTemporalOrder, false);
   assert.equal(result.decision, "uncertain-order");
-  assert.match(result.recommendation, /fresh safety confirmation/);
+  assert.match(result.recommendation, /confirmación de seguridad reciente/);
+});
+
+test("temporal order stays uncertain when uncertainty windows overlap", () => {
+  const result = compareWithClockUncertainty(0, 100, 80);
+
+  assert.equal(result.differenceMs, 100);
+  assert.equal(result.combinedUncertaintyMs, 160);
+  assert.equal(result.overlappingWindows, true);
+  assert.equal(result.canEstablishTemporalOrder, false);
+  assert.equal(result.decision, "uncertain-order");
+});
+
+test("temporal order is usable only beyond combined uncertainty", () => {
+  const result = compareWithClockUncertainty(0, 161, 80);
+
+  assert.equal(result.differenceMs, 161);
+  assert.equal(result.combinedUncertaintyMs, 160);
+  assert.equal(result.overlappingWindows, false);
+  assert.equal(result.canEstablishTemporalOrder, true);
+  assert.equal(result.decision, "timestamp-order-usable");
 });
 
 test("scenario analysis marks late telemetry out-of-order without discarding it automatically", () => {
@@ -162,9 +190,38 @@ test("scenario analysis refuses exact incident order when all audit events are w
   );
 
   assert.equal(audit.exactTotalOrderTrusted, false);
+  assert.equal(audit.combinedUncertaintyMs, 200);
   assert.equal(audit.tooClosePairs.length, 6);
   assert.ok(audit.recommendedMetadata.includes("causationId"));
   assert.ok(audit.recommendedMetadata.includes("sourceSequence"));
+});
+
+test("audit confidence flags events that overlap within combined uncertainty", () => {
+  const audit = evaluateAuditConfidence(
+    [
+      { service: "left", timestamp: "10:30:00.000", event: "Left" },
+      { service: "right", timestamp: "10:30:00.150", event: "Right" }
+    ],
+    100
+  );
+
+  assert.equal(audit.combinedUncertaintyMs, 200);
+  assert.equal(audit.exactTotalOrderTrusted, false);
+  assert.deepEqual(audit.tooClosePairs, [{ left: "left", right: "right", differenceMs: 150 }]);
+});
+
+test("audit confidence trusts total order beyond combined uncertainty", () => {
+  const audit = evaluateAuditConfidence(
+    [
+      { service: "left", timestamp: "10:30:00.000", event: "Left" },
+      { service: "right", timestamp: "10:30:00.201", event: "Right" }
+    ],
+    100
+  );
+
+  assert.equal(audit.combinedUncertaintyMs, 200);
+  assert.equal(audit.exactTotalOrderTrusted, true);
+  assert.deepEqual(audit.tooClosePairs, []);
 });
 
 test("scenario analysis uses occurrence time for business SLA and ingestion times for delay", () => {
@@ -193,7 +250,7 @@ test("scenario analysis accepts small future timestamps as skewed instead of inv
   assert.equal(future.futureByMs, 2_000);
   assert.equal(future.withinFutureTolerance, true);
   assert.equal(future.invalid, false);
-  assert.match(future.recommendation, /Accept with uncertainty/);
+  assert.match(future.recommendation, /Acepte con metadatos de incertidumbre/);
 });
 
 test("scenario analysis mode returns all teaching scenarios", () => {
@@ -205,4 +262,57 @@ test("scenario analysis mode returns all teaching scenarios", () => {
   assert.equal(report.audit.exactTotalOrderTrusted, false);
   assert.equal(report.deliverySla.metBusinessSla, true);
   assert.equal(report.futureTimestamp.invalid, false);
+});
+
+test("scenario analysis JSON CLI returns stable structured contract", () => {
+  const output = execFileSync(process.execPath, [clockSyncLabPath, "--scenario-analysis", "--json"], { encoding: "utf8" });
+  const result = JSON.parse(output);
+
+  assert.equal(result.labId, "clock-sync");
+  assert.equal(result.session, 22);
+  assert.equal(result.mode, "scenario-analysis");
+  assert.equal(typeof result.title, "string");
+  assert.equal(typeof result.summary, "string");
+  assert.equal(typeof result.inputs, "object");
+  assert.equal(result.inputs.json, undefined);
+  assert.equal(result.inputs.timeline, undefined);
+  assert.equal(typeof result.metrics, "object");
+  assert.ok(Array.isArray(result.observations));
+  assert.ok(Array.isArray(result.decisions));
+  assert.ok(Array.isArray(result.timeline));
+  assert.ok(Array.isArray(result.recommendations));
+  assert.equal(typeof result.raw, "object");
+});
+
+test("structured result inputs use the selected mode preset", () => {
+  const normal = createClockSyncLabResult({ mode: "normal" });
+  const scenario = createClockSyncLabResult({ mode: "scenario-analysis" });
+
+  assert.equal(normal.inputs.clientSendAtMs, 1_000);
+  assert.equal(normal.inputs.clockErrorMs, undefined);
+  assert.equal(scenario.inputs.clockErrorMs, 80);
+});
+
+test("timeline CLI exposes overlapping uncertainty windows and uncertain order", () => {
+  const output = execFileSync(process.execPath, [clockSyncLabPath, "--scenario-analysis", "--timeline"], { encoding: "utf8" });
+
+  assert.match(output, /window=\[/);
+  assert.match(output, /\+\/-?80ms|\+\/\-80ms/);
+  assert.match(output, /overlappingWindows=true/);
+  assert.match(output, /decision=uncertain-order/);
+});
+
+test("structured scenario result includes five scenarios and key decisions", () => {
+  const result = createClockSyncLabResult({ mode: "scenario-analysis" });
+  const decisionsById = Object.fromEntries(result.decisions.map((decision) => [decision.id, decision]));
+
+  assert.equal(result.decisions.length, 5);
+  assert.equal(decisionsById["battery-vs-mission"].decision, "uncertain-order");
+  assert.equal(decisionsById["out-of-order-telemetry"].decision, "keep-for-audit-do-not-overwrite-state");
+  assert.equal(decisionsById["incident-audit"].decision, "exact-order-not-trusted");
+  assert.equal(decisionsById["delivery-sla"].decision, "business-sla-met-by-occurred-at");
+  assert.equal(decisionsById["future-timestamp"].decision, "future-timestamp-accepted-with-uncertainty");
+  assert.equal(result.metrics.overlappingWindows, true);
+  assert.equal(result.raw.telemetry.packets[2].id, "P3");
+  assert.equal(result.raw.telemetry.packets[2].keepForAudit, true);
 });
