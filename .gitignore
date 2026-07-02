@@ -6,11 +6,6 @@ venv/
 *.pyo
 *.pyd
 
-# Local AI/tooling metadata
-.atl/
-.pi/
-.pi
-
 # Publish only lab instructions from docs/
 docs/*
 !docs/instrucciones-laboratorio-*.md

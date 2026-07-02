@@ -1,4 +1,5 @@
 const { listClockSyncModes, runClockSyncLab } = require("./adapters/clock-sync-adapter");
+const { listDistributedCoordinationModes, runDistributedCoordinationObservabilityLab } = require("./adapters/distributed-coordination-adapter");
 const { listDistributedLocksModes, runDistributedLocksObservabilityLab } = require("./adapters/distributed-locks-adapter");
 const { listLamportOrderingModes, runLamportOrderingObservabilityLab } = require("./adapters/lamport-ordering-adapter");
 const { listLeaderElectionModes, runLeaderElectionObservabilityLab } = require("./adapters/leader-election-adapter");
@@ -76,6 +77,16 @@ const labs = [
     defaultMode: "stable-leader-heartbeats",
     modes: listLeaderElectionModes,
     run: runLeaderElectionObservabilityLab
+  },
+  {
+    id: "distributed-coordination",
+    session: 28,
+    title: "Coordinación distribuida en escenarios reales",
+    purpose: "Combinar tiempo, evidencia causal, leases, líder y sospechas de falla para tomar decisiones AURA defendibles.",
+    relationship: "Extiende la Sesión 27 y prepara el laboratorio integrador de sincronización y coordinación en la Sesión 29",
+    defaultMode: "coordinated-dispatch-handoff",
+    modes: listDistributedCoordinationModes,
+    run: runDistributedCoordinationObservabilityLab
   }
 ];
 

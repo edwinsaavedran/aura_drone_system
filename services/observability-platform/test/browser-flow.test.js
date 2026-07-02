@@ -118,55 +118,57 @@ test("public index exposes every DOM id used by the browser app", () => {
   assert.deepEqual(missingIds, []);
 });
 
-test("public index marks Session 27 as the current lab", () => {
+test("public index marks Session 28 as the current lab", () => {
   const indexSource = readPublicFile("index.html");
 
   assert.match(indexSource, /Sesión 26 · Implementada: locks, leases y vencimiento/);
-  assert.match(indexSource, /Sesión 27 · Actual: elección de líder y detectores de fallas/);
-  assert.match(indexSource, /Sesión 28 · Siguiente: coordinación distribuida en escenarios reales/);
+  assert.match(indexSource, /Sesión 27 · Implementada: elección de líder y detectores de fallas/);
+  assert.match(indexSource, /Sesión 28 · Actual: coordinación distribuida en escenarios reales/);
   assert.doesNotMatch(indexSource, /Sesión 26 · Actual/);
-  assert.doesNotMatch(indexSource, /Sesión 28 · Actual/);
+  assert.doesNotMatch(indexSource, /Sesión 27 · Actual/);
 });
 
-test("browser flow auto-runs the active Session 27 leader election lab and renders the result", async () => {
+test("browser flow auto-runs the active Session 28 distributed coordination lab and renders the result", async () => {
   const runPayload = {
-    labId: "leader-election",
-    session: 27,
-    mode: "stable-leader-heartbeats",
-    title: "Sesión 27: Elección de líder y detectores de fallas",
-    summary: "El líder conserva su rol mientras mantiene heartbeats dentro del timeout.",
-    observations: ["El detector no sospecha al líder si los heartbeats llegan dentro de la ventana."],
-    recommendations: ["Modele la elección como evidencia educativa, no como consenso productivo."],
+    labId: "distributed-coordination",
+    session: 28,
+    mode: "coordinated-dispatch-handoff",
+    title: "Sesión 28: Coordinación distribuida en escenarios reales",
+    summary: "El handoff se acepta con lease vigente y evidencia causal.",
+    observations: ["El handoff se acepta porque el líder conserva lease vigente."],
+    recommendations: ["Combine tiempo, causalidad, lease vigente, líder y sospecha antes de aceptar una acción coordinada."],
     decisions: [
       {
-        title: "Liderazgo con sospechas",
-        decision: "leader-by-priority-with-timeout",
-        recommendation: "Elija el candidato de mayor prioridad que no esté sospechado por timeout."
+        title: "Evidencia combinada",
+        decision: "no-decidir-con-una-sola-senal",
+        recommendation: "Combine tiempo, causalidad, lease vigente, líder y sospecha."
       }
     ],
     learning: {
-      objective: "Entender elección de líder y detectores de fallas con heartbeats.",
+      objective: "Integrar tiempo, causalidad, leases, líder y sospechas de falla.",
       keyMetrics: [
-        { label: "Cambios de líder", value: 0, unit: "cambios", meaning: "Estabilidad del coordinador observado." }
+        { label: "Lease TTL", value: 120, unit: "ms", meaning: "Ventana temporal máxima para defender ownership." }
       ],
-      checklist: ["Revise heartbeats", "Revise sospechas"],
-      takeaway: "Un detector de fallas trabaja con sospechas, no con certezas absolutas."
+      checklist: ["Revise causalidad", "Revise lease"],
+      takeaway: "Coordinar es tomar una decisión limitada con evidencia disponible."
     },
-    metrics: { leaderChanges: 0, suspectedNodes: 0 },
+    metrics: { actionAccepted: true, actionWithinLease: true, causalFacts: 3 },
     evidence: {
-      clusterId: "aura-leader-election-cluster",
-      detectorType: "heartbeat-timeout",
-      initialLeader: "monitor-telemetria",
-      finalLeader: "monitor-telemetria",
-      electionRule: "highest-priority-non-suspected",
-      timeoutPolicy: { failureTimeoutMs: 120 },
-      suspectedNodes: [],
-      falseSuspicionSubjects: [],
-      scopeWarning: "Session 27 models educational leader election and failure detector behavior only; consensus, quorum, Raft/Paxos and production failover machinery are out of scope."
+      coordinationId: "aura-real-dispatch-coordination",
+      leader: "monitor-telemetria",
+      finalCoordinator: "gestor-flota",
+      resourceId: "dispatch-window:order-028",
+      lease: { leaseDeadline: 1120 },
+      action: { accepted: true, reason: "causal-evidence-and-valid-lease" },
+      causalEvidence: [{ eventId: "order-ready" }, { eventId: "leader-dispatch-grant" }, { eventId: "fleet-handoff-accepted" }],
+      suspicion: null,
+      compensation: null,
+      decisionModel: "time-plus-causal-evidence-plus-lease-plus-leader-plus-failure-suspicion",
+      boundary: "Session 28 models applied coordination reasoning only; consensus, quorum, Raft/Paxos and production failover machinery are out of scope."
     },
-    timeline: [{ label: "monitor-telemetria mantiene liderazgo", decision: "leader-stable" }],
+    timeline: [{ label: "gestor-flota acepta despacho", decision: "handoff-accepted" }],
     raw: {
-      mode: "stable-leader-heartbeats"
+      mode: "coordinated-dispatch-handoff"
     }
   };
   const { elements, fetchCalls } = createBrowserHarness({
@@ -178,44 +180,45 @@ test("browser flow auto-runs the active Session 27 leader election lab and rende
           { id: "vector-clocks", session: 24, title: "Vector clocks", purpose: "Causalidad precisa", relationship: "Prepara Sesión 25", defaultMode: "causal-chain" },
           { id: "mutual-exclusion", session: 25, title: "Exclusión mutua", purpose: "Sección crítica", relationship: "Prepara Sesión 26", defaultMode: "contended-queue" },
           { id: "distributed-locks", session: 26, title: "Locks distribuidos", purpose: "Leases", relationship: "Prepara Sesión 27", defaultMode: "lock-acquire-and-hold" },
-          { id: "leader-election", session: 27, title: "Elección de líder", purpose: "Detectores de fallas", relationship: "Prepara Sesión 28", defaultMode: "stable-leader-heartbeats" }
+          { id: "leader-election", session: 27, title: "Elección de líder", purpose: "Detectores de fallas", relationship: "Prepara Sesión 28", defaultMode: "stable-leader-heartbeats" },
+          { id: "distributed-coordination", session: 28, title: "Coordinación distribuida", purpose: "Decisiones coordinadas", relationship: "Prepara Sesión 29", defaultMode: "coordinated-dispatch-handoff" }
         ]
       },
       modesPayloadByLab: {
-      "leader-election": {
+      "distributed-coordination": {
         modes: [
-          { id: "stable-leader-heartbeats", title: "Líder estable" },
-          { id: "leader-failure-and-reelection", title: "Falla y reelección" }
+          { id: "coordinated-dispatch-handoff", title: "Despacho coordinado" },
+          { id: "expired-lease-prevention", title: "Lease vencido" }
         ]
       }
     },
-    runPayloadByLabMode: { "leader-election:stable-leader-heartbeats": runPayload }
+    runPayloadByLabMode: { "distributed-coordination:coordinated-dispatch-handoff": runPayload }
   });
 
-  await waitFor(() => elements["mode-select"].innerHTML.includes("stable-leader-heartbeats"));
-  await waitFor(() => elements["raw-json"].textContent.includes('"mode": "stable-leader-heartbeats"'));
+  await waitFor(() => elements["mode-select"].innerHTML.includes("coordinated-dispatch-handoff"));
+  await waitFor(() => elements["raw-json"].textContent.includes('"mode": "coordinated-dispatch-handoff"'));
 
-  assert.match(elements["mode-select"].innerHTML, /stable-leader-heartbeats/);
-  assert.equal(elements["mode-select"].value, "stable-leader-heartbeats");
+  assert.match(elements["mode-select"].innerHTML, /coordinated-dispatch-handoff/);
+  assert.equal(elements["mode-select"].value, "coordinated-dispatch-handoff");
   assert.equal(elements["run-mode"].disabled, false);
 
   assert.deepEqual(fetchCalls, [
     "/api/labs",
-    "/api/labs/leader-election/modes",
-    "/api/labs/leader-election/run?mode=stable-leader-heartbeats"
+    "/api/labs/distributed-coordination/modes",
+    "/api/labs/distributed-coordination/run?mode=coordinated-dispatch-handoff"
   ]);
-  assert.match(elements["summary-content"].innerHTML, /leader-election/);
-  assert.match(elements["summary-content"].innerHTML, /stable-leader-heartbeats/);
-  assert.match(elements["observations-content"].innerHTML, /Liderazgo con sospechas/);
-  assert.match(elements["observations-content"].innerHTML, /leader-by-priority-with-timeout/);
-  assert.match(elements["observations-content"].innerHTML, /Elección de líder/);
-  assert.match(elements["observations-content"].innerHTML, /heartbeat-timeout/);
+  assert.match(elements["summary-content"].innerHTML, /distributed-coordination/);
+  assert.match(elements["summary-content"].innerHTML, /coordinated-dispatch-handoff/);
+  assert.match(elements["observations-content"].innerHTML, /Evidencia combinada/);
+  assert.match(elements["observations-content"].innerHTML, /no-decidir-con-una-sola-senal/);
+  assert.match(elements["observations-content"].innerHTML, /Coordinación distribuida/);
+  assert.match(elements["observations-content"].innerHTML, /time-plus-causal-evidence-plus-lease-plus-leader-plus-failure-suspicion/);
   assert.match(elements["observations-content"].innerHTML, /consensus, quorum, Raft\/Paxos and production failover machinery are out of scope/);
-  assert.match(elements["learning-content"].innerHTML, /Entender elección de líder/);
-  assert.match(elements["timeline-content"].innerHTML, /leader-stable/);
-  assert.match(elements["raw-json"].textContent, /"mode": "stable-leader-heartbeats"/);
-  assert.match(elements["raw-json"].textContent, /"leaderChanges": 0/);
-  assert.match(elements["status"].textContent, /stable-leader-heartbeats/);
+  assert.match(elements["learning-content"].innerHTML, /Integrar tiempo, causalidad, leases/);
+  assert.match(elements["timeline-content"].innerHTML, /handoff-accepted/);
+  assert.match(elements["raw-json"].textContent, /"mode": "coordinated-dispatch-handoff"/);
+  assert.match(elements["raw-json"].textContent, /"actionAccepted": true/);
+  assert.match(elements["status"].textContent, /coordinated-dispatch-handoff/);
 
   const visibleCurrentLabText = visibleTextFrom(elements, [
     "lab-session",
@@ -227,15 +230,15 @@ test("browser flow auto-runs the active Session 27 leader election lab and rende
     "timeline-content",
     "status"
   ]);
-  assert.match(visibleCurrentLabText, /Sesión 27/);
-  assert.match(visibleCurrentLabText, /Elección de líder/);
-  assert.match(visibleCurrentLabText, /Detectores de fallas/);
-  assert.match(visibleCurrentLabText, /Prepara Sesión 28/);
-  assert.match(visibleCurrentLabText, /stable-leader-heartbeats/);
-  assert.match(visibleCurrentLabText, /Modo stable-leader-heartbeats cargado/);
-  assert.match(visibleCurrentLabText, /Entender elección de líder/);
-  assert.match(visibleCurrentLabText, /leader-stable/);
-  assert.doesNotMatch(visibleCurrentLabText, /Sesión 28|Coordinación distribuida|coordinated-dispatch-handoff/);
+  assert.match(visibleCurrentLabText, /Sesión 28/);
+  assert.match(visibleCurrentLabText, /Coordinación distribuida/);
+  assert.match(visibleCurrentLabText, /Decisiones coordinadas/);
+  assert.match(visibleCurrentLabText, /Prepara Sesión 29/);
+  assert.match(visibleCurrentLabText, /coordinated-dispatch-handoff/);
+  assert.match(visibleCurrentLabText, /Modo coordinated-dispatch-handoff cargado/);
+  assert.match(visibleCurrentLabText, /Integrar tiempo, causalidad, leases/);
+  assert.match(visibleCurrentLabText, /handoff-accepted/);
+  assert.doesNotMatch(visibleCurrentLabText, /Sesión 27|Elección de líder|stable-leader-heartbeats/);
 });
 
 test("browser flow ignores stale delayed modes responses after switching labs", async () => {

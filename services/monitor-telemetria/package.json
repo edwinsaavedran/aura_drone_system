@@ -14,6 +14,7 @@
     "lab:mutual-exclusion": "node src/mutual-exclusion-lab.js",
     "lab:distributed-locks": "node src/distributed-locks-lab.js",
     "lab:leader-election": "node src/leader-election-lab.js",
+    "lab:distributed-coordination": "node src/distributed-coordination-lab.js",
     "test": "node --test"
   },
   "dependencies": {

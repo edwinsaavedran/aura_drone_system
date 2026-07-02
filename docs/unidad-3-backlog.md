@@ -17,7 +17,7 @@ Fuente de verdad académica: `docs/GESTION SID 2026 I.pdf`.
 | 25 | Exclusión mutua distribuida | Laboratorio determinístico `lab:mutual-exclusion`, tests, guía y visualización en plataforma. | Modela un arbitraje educativo de requests para estudiar una sección crítica compartida; no implementa un mutex distribuido productivo. |
 | 26 | Locks distribuidos, leases y riesgos operativos | Laboratorio determinístico `lab:distributed-locks`, tests, guía y visualización en plataforma. | Enseña por qué un lock distribuido necesita ownership temporal, TTL, expiración, renovación prudente y manejo de dueños stale. |
 | 27 | Elección de líder y detectores de fallas | Laboratorio determinístico `lab:leader-election`, tests, guía y visualización en plataforma. | Define quién coordina una acción cuando hay múltiples nodos candidatos y fallas parciales. |
-| 28 | Coordinación distribuida en escenarios reales | ABP sobre coordinación de múltiples nodos de AURA. | Integra tiempo, causalidad, locks, líder y fallas en un diseño defendible. |
+| 28 | Coordinación distribuida en escenarios reales | Laboratorio determinístico `lab:distributed-coordination`, tests, guía y visualización en plataforma. | Integra tiempo, causalidad, leases, líder, sospecha de fallas y compensación en decisiones defendibles. |
 | 29 | Laboratorio integrador de sincronización y coordinación | Simulador/laboratorio de integración. | Prepara la defensa técnica de PC3 con evidencia ejecutable. |
 | 30 | Práctica Calificada 3 | Desarrollo y sustentación técnica. | Evalúa sincronización y coordinación distribuida. |
 
@@ -38,6 +38,7 @@ Cada sesión debe dejar:
 - No adelantar locks, leases ni elección de líder dentro de las Sesiones 24 y 25.
 - No convertir la Sesión 26 en elección de líder, quórum ni infraestructura completa de fencing; el token de fencing queda como evidencia de stale owner.
 - No convertir la Sesión 27 en consenso, Raft/Paxos, quórum, membresía productiva, failover real ni rediseño de locks/fencing; el detector de fallas queda como evidencia educativa.
+- No convertir la Sesión 28 en consenso, quórum, Raft/Paxos, membresía productiva ni failover real; la coordinación aplicada queda como razonamiento educativo con compensación.
 
 ## Evidencia implementada
 
@@ -50,7 +51,8 @@ Cada sesión debe dejar:
 | 25 | `services/monitor-telemetria/src/mutual-exclusion-lab.js`, `services/monitor-telemetria/test/mutual-exclusion-lab.test.js`, `docs/instrucciones-laboratorio-sesion-25.md`, script `lab:mutual-exclusion`, modo observable `mutual-exclusion`. |
 | 26 | `services/monitor-telemetria/src/distributed-locks-lab.js`, `services/monitor-telemetria/test/distributed-locks-lab.test.js`, `docs/instrucciones-laboratorio-sesion-26.md`, script `lab:distributed-locks`, modo observable `distributed-locks`. |
 | 27 | `services/monitor-telemetria/src/leader-election-lab.js`, `services/monitor-telemetria/test/leader-election-lab.test.js`, `docs/instrucciones-laboratorio-sesion-27.md`, script `lab:leader-election`, modo observable `leader-election`. |
+| 28 | `services/monitor-telemetria/src/distributed-coordination-lab.js`, `services/monitor-telemetria/test/distributed-coordination-lab.test.js`, `docs/instrucciones-laboratorio-sesion-28.md`, script `lab:distributed-coordination`, modo observable `distributed-coordination`. |
 
 ## Siguiente paso
 
-Avanzar a la Sesión 28 con coordinación distribuida en escenarios reales. La Sesión 27 ya deja evidencia de elección de líder, heartbeats, reelección, sospecha falsa y recuperación sin mezclar consenso, quórum ni failover productivo.
+Avanzar a la Sesión 29 con el laboratorio integrador de sincronización y coordinación. La Sesión 28 ya deja evidencia de handoff coordinado, prevención por lease vencido y compensación degradada sin mezclar consenso, quórum ni failover productivo.

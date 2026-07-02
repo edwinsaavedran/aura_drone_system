@@ -16,11 +16,12 @@ const expectedVectorClockModeIds = ["causal-chain", "concurrent-events", "merge-
 const expectedMutualExclusionModeIds = ["contended-queue", "fairness-rounds", "critical-section-safety", "delay-and-reorder"];
 const expectedDistributedLocksModeIds = ["lock-acquire-and-hold", "lease-expiry-and-reacquire", "renewal-jitter-and-risk", "stale-owner-and-fencing-warning"];
 const expectedLeaderElectionModeIds = ["stable-leader-heartbeats", "leader-failure-and-reelection", "false-suspicion-timeout", "leader-recovery-rejoin"];
+const expectedDistributedCoordinationModeIds = ["coordinated-dispatch-handoff", "expired-lease-prevention", "degraded-compensation"];
 
-test("lab registry lists Session 21 through Session 27 labs", () => {
+test("lab registry lists Session 21 through Session 28 labs", () => {
   const labs = listLabs();
 
-  assert.deepEqual(labs.map((lab) => lab.id), ["physical-time", "clock-sync", "lamport-ordering", "vector-clocks", "mutual-exclusion", "distributed-locks", "leader-election"]);
+  assert.deepEqual(labs.map((lab) => lab.id), ["physical-time", "clock-sync", "lamport-ordering", "vector-clocks", "mutual-exclusion", "distributed-locks", "leader-election", "distributed-coordination"]);
   assert.equal(labs.find((lab) => lab.id === "physical-time").session, 21);
   assert.equal(labs.find((lab) => lab.id === "physical-time").defaultMode, "normal");
   assert.match(labs.find((lab) => lab.id === "clock-sync").relationship, /Sesión 21/);
@@ -34,6 +35,8 @@ test("lab registry lists Session 21 through Session 27 labs", () => {
   assert.match(labs.find((lab) => lab.id === "distributed-locks").relationship, /Sesión 27/);
   assert.equal(labs.find((lab) => lab.id === "leader-election").session, 27);
   assert.match(labs.find((lab) => lab.id === "leader-election").relationship, /Sesión 28/);
+  assert.equal(labs.find((lab) => lab.id === "distributed-coordination").session, 28);
+  assert.match(labs.find((lab) => lab.id === "distributed-coordination").relationship, /Sesión 29/);
 });
 
 test("lab registry lists modes and runs clock sync scenario analysis", () => {
@@ -156,6 +159,24 @@ test("lab registry lists modes and runs Leader election Session 27 stable leader
 test("lab registry runs each Leader election mode", () => {
   listLabModes("leader-election").forEach((mode) => {
     const result = runLab("leader-election", mode.id);
+
+    assert.equal(result.mode, mode.id);
+  });
+});
+
+test("lab registry lists modes and runs Distributed coordination Session 28 handoff", () => {
+  assert.deepEqual(listLabModes("distributed-coordination").map((mode) => mode.id), expectedDistributedCoordinationModeIds);
+
+  const result = runLab("distributed-coordination", "coordinated-dispatch-handoff");
+  assert.equal(result.labId, "distributed-coordination");
+  assert.equal(result.session, 28);
+  assert.equal(result.metrics.actionAccepted, true);
+  assert.equal(result.raw.mode, "coordinated-dispatch-handoff");
+});
+
+test("lab registry runs each Distributed coordination mode", () => {
+  listLabModes("distributed-coordination").forEach((mode) => {
+    const result = runLab("distributed-coordination", mode.id);
 
     assert.equal(result.mode, mode.id);
   });

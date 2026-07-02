@@ -7,7 +7,7 @@ const expectedChecks = [
     path: "/api/labs",
     validate: (body) => {
       const labs = JSON.parse(body).labs;
-      return labs.some((lab) => lab.id === "physical-time" && lab.session === 21) && labs.some((lab) => lab.id === "clock-sync" && lab.session === 22) && labs.some((lab) => lab.id === "lamport-ordering" && lab.session === 23) && labs.some((lab) => lab.id === "vector-clocks" && lab.session === 24) && labs.some((lab) => lab.id === "mutual-exclusion" && lab.session === 25) && labs.some((lab) => lab.id === "distributed-locks" && lab.session === 26) && labs.some((lab) => lab.id === "leader-election" && lab.session === 27);
+      return labs.some((lab) => lab.id === "physical-time" && lab.session === 21) && labs.some((lab) => lab.id === "clock-sync" && lab.session === 22) && labs.some((lab) => lab.id === "lamport-ordering" && lab.session === 23) && labs.some((lab) => lab.id === "vector-clocks" && lab.session === 24) && labs.some((lab) => lab.id === "mutual-exclusion" && lab.session === 25) && labs.some((lab) => lab.id === "distributed-locks" && lab.session === 26) && labs.some((lab) => lab.id === "leader-election" && lab.session === 27) && labs.some((lab) => lab.id === "distributed-coordination" && lab.session === 28);
     }
   },
   {
@@ -82,6 +82,17 @@ const expectedChecks = [
     validate: (body) => {
       const payload = JSON.parse(body);
       return payload.labId === "leader-election" && payload.session === 27 && payload.mode === "leader-failure-and-reelection" && payload.metrics.leaderChanges === 1;
+    }
+  },
+  {
+    path: "/api/labs/distributed-coordination/modes",
+    validate: (body) => JSON.parse(body).modes.some((mode) => mode.id === "degraded-compensation")
+  },
+  {
+    path: "/api/labs/distributed-coordination/run?mode=degraded-compensation",
+    validate: (body) => {
+      const payload = JSON.parse(body);
+      return payload.labId === "distributed-coordination" && payload.session === 28 && payload.mode === "degraded-compensation" && payload.metrics.compensationApplied === true;
     }
   },
   {
