@@ -17,11 +17,12 @@ const expectedMutualExclusionModeIds = ["contended-queue", "fairness-rounds", "c
 const expectedDistributedLocksModeIds = ["lock-acquire-and-hold", "lease-expiry-and-reacquire", "renewal-jitter-and-risk", "stale-owner-and-fencing-warning"];
 const expectedLeaderElectionModeIds = ["stable-leader-heartbeats", "leader-failure-and-reelection", "false-suspicion-timeout", "leader-recovery-rejoin"];
 const expectedDistributedCoordinationModeIds = ["coordinated-dispatch-handoff", "expired-lease-prevention", "degraded-compensation"];
+const expectedCoordinationIntegrationModeIds = ["pc3-ready-happy-path", "causal-conflict-review", "suspected-leader-compensation"];
 
-test("lab registry lists Session 21 through Session 28 labs", () => {
+test("lab registry lists Session 21 through Session 29 labs", () => {
   const labs = listLabs();
 
-  assert.deepEqual(labs.map((lab) => lab.id), ["physical-time", "clock-sync", "lamport-ordering", "vector-clocks", "mutual-exclusion", "distributed-locks", "leader-election", "distributed-coordination"]);
+  assert.deepEqual(labs.map((lab) => lab.id), ["physical-time", "clock-sync", "lamport-ordering", "vector-clocks", "mutual-exclusion", "distributed-locks", "leader-election", "distributed-coordination", "coordination-integration"]);
   assert.equal(labs.find((lab) => lab.id === "physical-time").session, 21);
   assert.equal(labs.find((lab) => lab.id === "physical-time").defaultMode, "normal");
   assert.match(labs.find((lab) => lab.id === "clock-sync").relationship, /Sesión 21/);
@@ -37,6 +38,8 @@ test("lab registry lists Session 21 through Session 28 labs", () => {
   assert.match(labs.find((lab) => lab.id === "leader-election").relationship, /Sesión 28/);
   assert.equal(labs.find((lab) => lab.id === "distributed-coordination").session, 28);
   assert.match(labs.find((lab) => lab.id === "distributed-coordination").relationship, /Sesión 29/);
+  assert.equal(labs.find((lab) => lab.id === "coordination-integration").session, 29);
+  assert.match(labs.find((lab) => lab.id === "coordination-integration").relationship, /Sesiones 21-28/);
 });
 
 test("lab registry lists modes and runs clock sync scenario analysis", () => {
@@ -177,6 +180,25 @@ test("lab registry lists modes and runs Distributed coordination Session 28 hand
 test("lab registry runs each Distributed coordination mode", () => {
   listLabModes("distributed-coordination").forEach((mode) => {
     const result = runLab("distributed-coordination", mode.id);
+
+    assert.equal(result.mode, mode.id);
+  });
+});
+
+test("lab registry lists modes and runs Coordination integration Session 29 happy path", () => {
+  assert.deepEqual(listLabModes("coordination-integration").map((mode) => mode.id), expectedCoordinationIntegrationModeIds);
+
+  const result = runLab("coordination-integration", "pc3-ready-happy-path");
+  assert.equal(result.labId, "coordination-integration");
+  assert.equal(result.session, 29);
+  assert.equal(result.evidence.decision, "accepted");
+  assert.equal(result.evidence.confidence, "high");
+  assert.equal(result.raw.mode, "pc3-ready-happy-path");
+});
+
+test("lab registry runs each Coordination integration mode", () => {
+  listLabModes("coordination-integration").forEach((mode) => {
+    const result = runLab("coordination-integration", mode.id);
 
     assert.equal(result.mode, mode.id);
   });

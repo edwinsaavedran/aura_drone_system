@@ -1,4 +1,5 @@
 const { listClockSyncModes, runClockSyncLab } = require("./adapters/clock-sync-adapter");
+const { listCoordinationIntegrationModes, runCoordinationIntegrationObservabilityLab } = require("./adapters/coordination-integration-adapter");
 const { listDistributedCoordinationModes, runDistributedCoordinationObservabilityLab } = require("./adapters/distributed-coordination-adapter");
 const { listDistributedLocksModes, runDistributedLocksObservabilityLab } = require("./adapters/distributed-locks-adapter");
 const { listLamportOrderingModes, runLamportOrderingObservabilityLab } = require("./adapters/lamport-ordering-adapter");
@@ -87,6 +88,16 @@ const labs = [
     defaultMode: "coordinated-dispatch-handoff",
     modes: listDistributedCoordinationModes,
     run: runDistributedCoordinationObservabilityLab
+  },
+  {
+    id: "coordination-integration",
+    session: 29,
+    title: "Laboratorio integrador de sincronización y coordinación",
+    purpose: "Defender una decisión distribuida de AURA con evidencia integrada de tiempo físico, sincronización, Lamport, vector clocks, leases, líder, sospecha y compensación.",
+    relationship: "Integra las Sesiones 21-28 y prepara la defensa técnica de PC3 sin implementar consenso ni failover productivo",
+    defaultMode: "pc3-ready-happy-path",
+    modes: listCoordinationIntegrationModes,
+    run: runCoordinationIntegrationObservabilityLab
   }
 ];
 

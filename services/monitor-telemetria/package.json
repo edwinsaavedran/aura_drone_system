@@ -15,6 +15,7 @@
     "lab:distributed-locks": "node src/distributed-locks-lab.js",
     "lab:leader-election": "node src/leader-election-lab.js",
     "lab:distributed-coordination": "node src/distributed-coordination-lab.js",
+    "lab:coordination-integration": "node src/coordination-integration-lab.js",
     "test": "node --test"
   },
   "dependencies": {

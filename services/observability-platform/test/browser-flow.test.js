@@ -90,12 +90,44 @@ function createDeferred() {
   return { promise, resolve, reject };
 }
 
+// This deterministic VM harness executes the real browser app without a full browser.
+// Keep these assertions focused on user-visible copy and flow outcomes, not DOM internals.
+function stripMarkup(value) {
+  return String(value)
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&quot;/g, '"')
+    .replace(/&#039;/g, "'")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 function visibleTextFrom(elements, ids) {
   return ids
-    .map((id) => `${elements[id].textContent} ${elements[id].innerHTML.replace(/<[^>]+>/g, " ")}`)
+    .map((id) => `${elements[id].textContent} ${stripMarkup(elements[id].innerHTML)}`)
     .join(" ")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+function publicIndexVisibleText() {
+  return stripMarkup(readPublicFile("index.html"));
+}
+
+function assertVisibleTextIncludes(visibleText, expected) {
+  assert.ok(
+    visibleText.includes(expected),
+    `Expected visible UI text to include ${JSON.stringify(expected)}. Visible text: ${visibleText}`
+  );
+}
+
+function assertVisibleTextExcludes(visibleText, unexpected) {
+  assert.ok(
+    !visibleText.includes(unexpected),
+    `Expected visible UI text not to include ${JSON.stringify(unexpected)}. Visible text: ${visibleText}`
+  );
 }
 
 async function waitFor(predicate) {
@@ -118,57 +150,60 @@ test("public index exposes every DOM id used by the browser app", () => {
   assert.deepEqual(missingIds, []);
 });
 
-test("public index marks Session 28 as the current lab", () => {
-  const indexSource = readPublicFile("index.html");
+test("public index marks Session 29 as the current lab", () => {
+  const indexVisibleText = publicIndexVisibleText();
 
-  assert.match(indexSource, /Sesión 26 · Implementada: locks, leases y vencimiento/);
-  assert.match(indexSource, /Sesión 27 · Implementada: elección de líder y detectores de fallas/);
-  assert.match(indexSource, /Sesión 28 · Actual: coordinación distribuida en escenarios reales/);
-  assert.doesNotMatch(indexSource, /Sesión 26 · Actual/);
-  assert.doesNotMatch(indexSource, /Sesión 27 · Actual/);
+  assertVisibleTextIncludes(indexVisibleText, "Sesión 26 · Implementada: locks, leases y vencimiento");
+  assertVisibleTextIncludes(indexVisibleText, "Sesión 27 · Implementada: elección de líder y detectores de fallas");
+  assertVisibleTextIncludes(indexVisibleText, "Sesión 28 · Implementada: coordinación distribuida en escenarios reales");
+  assertVisibleTextIncludes(indexVisibleText, "Sesión 29 · Actual: laboratorio integrador para PC3");
+  assertVisibleTextExcludes(indexVisibleText, "Sesión 26 · Actual");
+  assertVisibleTextExcludes(indexVisibleText, "Sesión 27 · Actual");
+  assertVisibleTextExcludes(indexVisibleText, "Sesión 28 · Actual");
 });
 
-test("browser flow auto-runs the active Session 28 distributed coordination lab and renders the result", async () => {
+test("browser VM harness auto-runs active Session 29 and shows the user-facing PC3 defense", async () => {
   const runPayload = {
-    labId: "distributed-coordination",
-    session: 28,
-    mode: "coordinated-dispatch-handoff",
-    title: "Sesión 28: Coordinación distribuida en escenarios reales",
-    summary: "El handoff se acepta con lease vigente y evidencia causal.",
-    observations: ["El handoff se acepta porque el líder conserva lease vigente."],
-    recommendations: ["Combine tiempo, causalidad, lease vigente, líder y sospecha antes de aceptar una acción coordinada."],
+    labId: "coordination-integration",
+    session: 29,
+    mode: "pc3-ready-happy-path",
+    title: "Sesión 29: Laboratorio integrador de sincronización y coordinación",
+    summary: "La acción se acepta porque todas las señales integradas son consistentes.",
+    observations: ["Todas las señales educativas apuntan en la misma dirección."],
+    recommendations: ["Cruce tiempo físico, sincronización, Lamport, vector clocks, lease, líder y sospecha."],
     decisions: [
       {
-        title: "Evidencia combinada",
-        decision: "no-decidir-con-una-sola-senal",
-        recommendation: "Combine tiempo, causalidad, lease vigente, líder y sospecha."
+        title: "Defensa con evidencia combinada",
+        decision: "accepted",
+        recommendation: "No defienda una acción distribuida con una sola señal."
       }
     ],
     learning: {
-      objective: "Integrar tiempo, causalidad, leases, líder y sospechas de falla.",
+      objective: "Defender una decisión distribuida de AURA integrando evidencia de tiempo físico, sincronización, Lamport, vector clocks, leases, líder, sospecha de fallas y compensación.",
       keyMetrics: [
-        { label: "Lease TTL", value: 120, unit: "ms", meaning: "Ventana temporal máxima para defender ownership." }
+        { label: "Lease valid", value: true, unit: "boolean", meaning: "Comprueba si la acción ocurre dentro del ownership temporal." }
       ],
-      checklist: ["Revise causalidad", "Revise lease"],
-      takeaway: "Coordinar es tomar una decisión limitada con evidencia disponible."
+      checklist: ["Valide tolerancia", "Revise vector clocks"],
+      takeaway: "La defensa PC3 exige una decisión limitada y honesta."
     },
-    metrics: { actionAccepted: true, actionWithinLease: true, causalFacts: 3 },
+    metrics: { actionAccepted: true, leaseValid: true, vectorConflictDetected: false },
     evidence: {
-      coordinationId: "aura-real-dispatch-coordination",
-      leader: "monitor-telemetria",
-      finalCoordinator: "gestor-flota",
-      resourceId: "dispatch-window:order-028",
-      lease: { leaseDeadline: 1120 },
-      action: { accepted: true, reason: "causal-evidence-and-valid-lease" },
-      causalEvidence: [{ eventId: "order-ready" }, { eventId: "leader-dispatch-grant" }, { eventId: "fleet-handoff-accepted" }],
-      suspicion: null,
-      compensation: null,
-      decisionModel: "time-plus-causal-evidence-plus-lease-plus-leader-plus-failure-suspicion",
-      boundary: "Session 28 models applied coordination reasoning only; consensus, quorum, Raft/Paxos and production failover machinery are out of scope."
+      integrationId: "aura-pc3-coordination-defense",
+      decision: "accepted",
+      confidence: "high",
+      physicalTime: { maxSkewMs: 18 },
+      clockSync: { trusted: true },
+      lamport: { insufficiency: false },
+      vectorClock: { concurrent: false, conflictDetected: false },
+      lease: { validAtAction: true },
+      leader: { stable: true },
+      failureSuspicion: { suspected: false },
+      compensation: { applied: false },
+      boundary: "Session 29 integrates synchronization and coordination reasoning for PC3 defense only; it does not implement consensus, quorum, Raft/Paxos, production membership, distributed transactions, or real failover."
     },
-    timeline: [{ label: "gestor-flota acepta despacho", decision: "handoff-accepted" }],
+    timeline: [{ label: "gestor-flota acepta despacho", decision: "accepted" }],
     raw: {
-      mode: "coordinated-dispatch-handoff"
+      mode: "pc3-ready-happy-path"
     }
   };
   const { elements, fetchCalls } = createBrowserHarness({
@@ -181,64 +216,76 @@ test("browser flow auto-runs the active Session 28 distributed coordination lab 
           { id: "mutual-exclusion", session: 25, title: "Exclusión mutua", purpose: "Sección crítica", relationship: "Prepara Sesión 26", defaultMode: "contended-queue" },
           { id: "distributed-locks", session: 26, title: "Locks distribuidos", purpose: "Leases", relationship: "Prepara Sesión 27", defaultMode: "lock-acquire-and-hold" },
           { id: "leader-election", session: 27, title: "Elección de líder", purpose: "Detectores de fallas", relationship: "Prepara Sesión 28", defaultMode: "stable-leader-heartbeats" },
-          { id: "distributed-coordination", session: 28, title: "Coordinación distribuida", purpose: "Decisiones coordinadas", relationship: "Prepara Sesión 29", defaultMode: "coordinated-dispatch-handoff" }
+          { id: "distributed-coordination", session: 28, title: "Coordinación distribuida", purpose: "Decisiones coordinadas", relationship: "Prepara Sesión 29", defaultMode: "coordinated-dispatch-handoff" },
+          { id: "coordination-integration", session: 29, title: "Laboratorio integrador", purpose: "Defensa PC3", relationship: "Integra las Sesiones 21-28", defaultMode: "pc3-ready-happy-path" }
         ]
       },
       modesPayloadByLab: {
-      "distributed-coordination": {
+      "coordination-integration": {
         modes: [
-          { id: "coordinated-dispatch-handoff", title: "Despacho coordinado" },
-          { id: "expired-lease-prevention", title: "Lease vencido" }
+          { id: "pc3-ready-happy-path", title: "Preparado para PC3" },
+          { id: "causal-conflict-review", title: "Conflicto causal" }
         ]
       }
     },
-    runPayloadByLabMode: { "distributed-coordination:coordinated-dispatch-handoff": runPayload }
+    runPayloadByLabMode: { "coordination-integration:pc3-ready-happy-path": runPayload }
   });
 
-  await waitFor(() => elements["mode-select"].innerHTML.includes("coordinated-dispatch-handoff"));
-  await waitFor(() => elements["raw-json"].textContent.includes('"mode": "coordinated-dispatch-handoff"'));
+  await waitFor(() => visibleTextFrom(elements, ["status"]).includes("Modo pc3-ready-happy-path cargado."));
 
-  assert.match(elements["mode-select"].innerHTML, /coordinated-dispatch-handoff/);
-  assert.equal(elements["mode-select"].value, "coordinated-dispatch-handoff");
+  const visibleModeOptions = visibleTextFrom(elements, ["mode-select"]);
+  assertVisibleTextIncludes(visibleModeOptions, "Preparado para PC3");
+  assertVisibleTextIncludes(visibleModeOptions, "Conflicto causal");
+  assert.equal(elements["mode-select"].value, "pc3-ready-happy-path");
   assert.equal(elements["run-mode"].disabled, false);
 
   assert.deepEqual(fetchCalls, [
     "/api/labs",
-    "/api/labs/distributed-coordination/modes",
-    "/api/labs/distributed-coordination/run?mode=coordinated-dispatch-handoff"
+    "/api/labs/coordination-integration/modes",
+    "/api/labs/coordination-integration/run?mode=pc3-ready-happy-path"
   ]);
-  assert.match(elements["summary-content"].innerHTML, /distributed-coordination/);
-  assert.match(elements["summary-content"].innerHTML, /coordinated-dispatch-handoff/);
-  assert.match(elements["observations-content"].innerHTML, /Evidencia combinada/);
-  assert.match(elements["observations-content"].innerHTML, /no-decidir-con-una-sola-senal/);
-  assert.match(elements["observations-content"].innerHTML, /Coordinación distribuida/);
-  assert.match(elements["observations-content"].innerHTML, /time-plus-causal-evidence-plus-lease-plus-leader-plus-failure-suspicion/);
-  assert.match(elements["observations-content"].innerHTML, /consensus, quorum, Raft\/Paxos and production failover machinery are out of scope/);
-  assert.match(elements["learning-content"].innerHTML, /Integrar tiempo, causalidad, leases/);
-  assert.match(elements["timeline-content"].innerHTML, /handoff-accepted/);
-  assert.match(elements["raw-json"].textContent, /"mode": "coordinated-dispatch-handoff"/);
-  assert.match(elements["raw-json"].textContent, /"actionAccepted": true/);
-  assert.match(elements["status"].textContent, /coordinated-dispatch-handoff/);
 
   const visibleCurrentLabText = visibleTextFrom(elements, [
     "lab-session",
     "lab-title",
     "lab-purpose",
     "lab-relationship",
+    "mode-select",
     "summary-content",
+    "observations-content",
     "learning-content",
+    "metrics-content",
     "timeline-content",
     "status"
   ]);
-  assert.match(visibleCurrentLabText, /Sesión 28/);
-  assert.match(visibleCurrentLabText, /Coordinación distribuida/);
-  assert.match(visibleCurrentLabText, /Decisiones coordinadas/);
-  assert.match(visibleCurrentLabText, /Prepara Sesión 29/);
-  assert.match(visibleCurrentLabText, /coordinated-dispatch-handoff/);
-  assert.match(visibleCurrentLabText, /Modo coordinated-dispatch-handoff cargado/);
-  assert.match(visibleCurrentLabText, /Integrar tiempo, causalidad, leases/);
-  assert.match(visibleCurrentLabText, /handoff-accepted/);
-  assert.doesNotMatch(visibleCurrentLabText, /Sesión 27|Elección de líder|stable-leader-heartbeats/);
+  assertVisibleTextIncludes(visibleCurrentLabText, "Sesión 29");
+  assertVisibleTextIncludes(visibleCurrentLabText, "Laboratorio integrador");
+  assertVisibleTextIncludes(visibleCurrentLabText, "Defensa PC3");
+  assertVisibleTextIncludes(visibleCurrentLabText, "Integra las Sesiones 21-28");
+  assertVisibleTextIncludes(visibleCurrentLabText, "Preparado para PC3");
+  assertVisibleTextIncludes(visibleCurrentLabText, "coordination-integration");
+  assertVisibleTextIncludes(visibleCurrentLabText, "pc3-ready-happy-path");
+  assertVisibleTextIncludes(visibleCurrentLabText, "Modo pc3-ready-happy-path cargado.");
+  assertVisibleTextIncludes(visibleCurrentLabText, "La acción se acepta porque todas las señales integradas son consistentes.");
+  assertVisibleTextIncludes(visibleCurrentLabText, "Defender una decisión distribuida");
+  assertVisibleTextIncludes(visibleCurrentLabText, "Integración de sincronización y coordinación");
+  assertVisibleTextIncludes(visibleCurrentLabText, "aura-pc3-coordination-defense");
+  assertVisibleTextIncludes(visibleCurrentLabText, "Decisión accepted");
+  assertVisibleTextIncludes(visibleCurrentLabText, "Confianza high");
+  assertVisibleTextIncludes(visibleCurrentLabText, "Lease vigente Sí");
+  assertVisibleTextIncludes(visibleCurrentLabText, "Líder estable Sí");
+  assertVisibleTextIncludes(visibleCurrentLabText, "Compensación No aplicada");
+  assertVisibleTextIncludes(visibleCurrentLabText, "does not implement consensus, quorum, Raft/Paxos");
+  assertVisibleTextIncludes(visibleCurrentLabText, "Defensa con evidencia combinada");
+  assertVisibleTextIncludes(visibleCurrentLabText, "No defienda una acción distribuida con una sola señal.");
+  assertVisibleTextIncludes(visibleCurrentLabText, "gestor-flota acepta despacho");
+  assertVisibleTextIncludes(visibleCurrentLabText, "decisión=accepted");
+  assertVisibleTextExcludes(visibleCurrentLabText, "Sesión 28 · Actual");
+  assertVisibleTextExcludes(visibleCurrentLabText, "coordinated-dispatch-handoff");
+
+  const visibleRawJsonText = visibleTextFrom(elements, ["raw-json"]);
+  assertVisibleTextIncludes(visibleRawJsonText, '"mode": "pc3-ready-happy-path"');
+  assertVisibleTextIncludes(visibleRawJsonText, '"actionAccepted": true');
 });
 
 test("browser flow ignores stale delayed modes responses after switching labs", async () => {

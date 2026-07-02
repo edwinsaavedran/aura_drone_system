@@ -6,7 +6,7 @@ El objetivo no es “hacer endpoints porque sí”. El objetivo es que el estudi
 
 ## Estado actual
 
-El estado actual del repo es **Unidad 2 cerrada con PC02** y **Unidad 3 consolidada hasta la Sesión 28 implementada**.
+El estado actual del repo es **Unidad 2 cerrada con PC02** y **Unidad 3 consolidada hasta la Sesión 29 implementada**.
 
 Esto significa que el proyecto ya no debe leerse solo como una secuencia de laboratorios. La **Práctica Calificada 02** cierra resiliencia, semánticas de entrega, backpressure, patrones de comunicación, naming y discovery básico. La **Unidad 3** empieza desde ese piso para estudiar tiempo, orden, causalidad y coordinación distribuida.
 
@@ -19,7 +19,7 @@ docs/pc2-respuestas.md     # solución docente, evidencia y decisiones técnicas
 
 | Área | Estado |
 |---|---|
-| Hito vigente | **PC02 cerrada; Unidad 3 consolidada hasta Sesión 28 implementada**. |
+| Hito vigente | **PC02 cerrada; Unidad 3 consolidada hasta Sesión 29 implementada**. |
 | Arquitectura base | Alineada y documentada para sesiones 11–18. |
 | REST v1 | Implementado en `gestor-flota`, `centro-logistica` y `planificador-rutas`. |
 | gRPC | Implementado en `monitor-telemetria`. |
@@ -28,7 +28,7 @@ docs/pc2-respuestas.md     # solución docente, evidencia y decisiones técnicas
 | Patrones de comunicación | Laboratorio in-memory para request/response, pub/sub, cola FIFO y streaming. |
 | Backpressure | Laboratorio in-memory para presión de streaming, cola bounded, backlog, drops/sampling y retry. |
 | Naming/discovery | Comunicación inter-servicio mediante configuración y nombres lógicos en Docker Compose. |
-| Tiempo físico, sincronización, causalidad y coordinación | Laboratorios determinísticos en `monitor-telemetria` para wall-clock, monotonic clock, skew, drift, tolerancia, offset, delay, corrección, confianza, Lamport clocks, vector clocks, `happened-before`, concurrencia, exclusión mutua distribuida, locks, leases, TTL, expiración, stale owner, elección de líder, heartbeats, sospechas, detectores de fallas y coordinación aplicada con compensación. |
+| Tiempo físico, sincronización, causalidad y coordinación | Laboratorios determinísticos en `monitor-telemetria` para wall-clock, monotonic clock, skew, drift, tolerancia, offset, delay, corrección, confianza, Lamport clocks, vector clocks, `happened-before`, concurrencia, exclusión mutua distribuida, locks, leases, TTL, expiración, stale owner, elección de líder, heartbeats, sospechas, detectores de fallas, coordinación aplicada con compensación e integración de evidencia para defensa PC3. |
 | Tests | Suites por servicio con `npm test`. |
 
 ## Qué queda construido al cierre de PC02
@@ -135,7 +135,7 @@ cd services/observability-platform
 npm run smoke
 ```
 
-El smoke test valida `/health`, `/api/labs`, los modos y ejecuciones principales de `physical-time`, `clock-sync`, `lamport-ordering`, `vector-clocks`, `mutual-exclusion`, `distributed-locks`, `leader-election` y `distributed-coordination`, `/` y `/app.js` contra `http://localhost:8010`.
+El smoke test valida `/health`, `/api/labs`, los modos y ejecuciones principales de `physical-time`, `clock-sync`, `lamport-ordering`, `vector-clocks`, `mutual-exclusion`, `distributed-locks`, `leader-election`, `distributed-coordination` y `coordination-integration`, `/` y `/app.js` contra `http://localhost:8010`.
 
 ### Por servicio
 
@@ -194,7 +194,7 @@ La Unidad 3 parte de una pregunta incómoda pero necesaria: si cada nodo observa
 | **26** | Locks distribuidos, leases y riesgos operativos | Laboratorio `lab:distributed-locks`, tests, guía y visualización en observability-platform. | Muestra por qué un lock distribuido necesita ownership temporal, TTL, expiración, renovación prudente y manejo de dueños stale. |
 | **27** | Elección de líder y detectores de fallas | Laboratorio `lab:leader-election`, tests, guía y visualización en observability-platform. | Permite decidir quién coordina cuando hay múltiples nodos candidatos y fallas parciales. |
 | **28** | Coordinación distribuida en escenarios reales | Laboratorio `lab:distributed-coordination`, tests, guía y visualización en observability-platform. | Integra tiempo, causalidad, leases, líder, sospecha de fallas y compensación en decisiones defendibles de AURA. |
-| 29 | Laboratorio integrador de sincronización y coordinación | Simulador/laboratorio integrador. | Preparará evidencia técnica para PC3. |
+| **29** | Laboratorio integrador de sincronización y coordinación | Laboratorio `lab:coordination-integration`, tests, guía y visualización en observability-platform. | Prepara evidencia técnica para PC3 defendiendo aceptar, revisar o compensar una acción distribuida. |
 | 30 | Práctica Calificada 3 | Desarrollo y sustentación técnica. | Evaluará sincronización y coordinación distribuida. |
 
 ## Qué aprende el estudiante
@@ -230,9 +230,9 @@ Regla de trabajo por sesión:
 4. implementación mínima;
 5. evidencia para defender la decisión.
 
-## Base didáctica actual: Sesiones 21, 22, 23, 24, 25, 26, 27 y 28
+## Base didáctica actual: Sesiones 21, 22, 23, 24, 25, 26, 27, 28 y 29
 
-La plataforma de observabilidad expone ocho laboratorios conectados:
+La plataforma de observabilidad expone nueve laboratorios conectados:
 
 - **Sesión 21 — Tiempo físico:** muestra wall-clock, monotonic clock, skew, drift y ventanas de tolerancia.
 - **Sesión 22 — Sincronización de relojes:** construye sobre esa base para estimar offset/delay, aplicar correcciones y evaluar confianza.
@@ -242,8 +242,9 @@ La plataforma de observabilidad expone ocho laboratorios conectados:
 - **Sesión 26 — Locks distribuidos y leases:** modela ownership temporal con TTL, expiración, renovación con jitter, stale owner y advertencia de fencing como evidencia.
 - **Sesión 27 — Elección de líder y detectores de fallas:** compara líder estable, falla, reelección, sospecha falsa y reincorporación con heartbeats y timeouts simulados.
 - **Sesión 28 — Coordinación distribuida en escenarios reales:** combina tiempo, causalidad, leases, líder, sospechas y compensación para defender decisiones AURA sin afirmar consenso.
+- **Sesión 29 — Laboratorio integrador de sincronización y coordinación:** cruza evidencia de sesiones 21-28 para decidir si una acción se acepta, requiere revisión o se compensa antes de PC3.
 
-La Sesión 28 consolida el paso de liderazgo educativo a coordinación aplicada con límites explícitos:
+La Sesión 29 consolida la defensa integradora para PC3 con límites explícitos:
 
 ```text
 Lamport local event: counter = counter + 1
@@ -268,6 +269,8 @@ rejoin: nodo recuperado vuelve como follower para evitar thrashing
 coordination decision: causal evidence + valid lease + current leader + suspicion state
 expired lease prevention: una historia causal válida no autoriza acción posterior al leaseDeadline
 degraded compensation: sospecha de líder -> pausar, reencolar y evitar duplicación
+coordination integration: physical time + clock sync + Lamport + vector clocks + lease + leader + suspicion + compensation
+PC3 defense boundary: no consensus, no quorum, no Raft/Paxos, no production membership, no distributed transactions, no real failover
 ```
 
 Comandos principales:
@@ -295,6 +298,9 @@ npm run lab:leader-election -- --leader-recovery-rejoin
 npm run lab:distributed-coordination -- --coordinated-dispatch-handoff
 npm run lab:distributed-coordination -- --expired-lease-prevention
 npm run lab:distributed-coordination -- --degraded-compensation
+npm run lab:coordination-integration -- --pc3-ready-happy-path
+npm run lab:coordination-integration -- --causal-conflict-review
+npm run lab:coordination-integration -- --suspected-leader-compensation
 ```
 
 Visualización educativa:
@@ -304,9 +310,9 @@ cd services/observability-platform
 npm start
 ```
 
-Luego abre `http://localhost:8010` para revisar el cockpit de observabilidad de las Sesiones 21, 22, 23, 24, 25, 26, 27 y 28. La Sesión 28 queda activa como laboratorio actual de coordinación distribuida en escenarios reales.
+Luego abre `http://localhost:8010` para revisar el cockpit de observabilidad de las Sesiones 21, 22, 23, 24, 25, 26, 27, 28 y 29. La Sesión 29 queda activa como laboratorio actual de integración para defensa PC3.
 
-Guías completas de la base 21-28:
+Guías completas de la base 21-29:
 
 ```text
 docs/instrucciones-laboratorio-sesion-21.md
@@ -317,15 +323,16 @@ docs/instrucciones-laboratorio-sesion-25.md
 docs/instrucciones-laboratorio-sesion-26.md
 docs/instrucciones-laboratorio-sesion-27.md
 docs/instrucciones-laboratorio-sesion-28.md
+docs/instrucciones-laboratorio-sesion-29.md
 ```
 
-Guía detallada de la Sesión 28:
+Guía detallada de la Sesión 29:
 
 ```text
-docs/instrucciones-laboratorio-sesion-28.md
+docs/instrucciones-laboratorio-sesion-29.md
 ```
 
-Alcance explícito: la Sesión 28 no implementa consenso, quórum, Raft/Paxos, membresía productiva ni failover real. La coordinación aplicada se usa solo como evidencia educativa para discutir decisiones limitadas, compensación y límites de leases/liderazgo.
+Alcance explícito: la Sesión 29 integra razonamiento de sincronización y coordinación solo para defensa PC3; no implementa consenso, quórum, Raft/Paxos, membresía productiva, transacciones distribuidas ni failover real.
 
 ## Laboratorio anterior: Sesión 25
 
@@ -612,6 +619,7 @@ docs/instrucciones-laboratorio-sesion-15.md
 | `docs/unidad-2-backlog.md` | Backlog y cronograma detallado de sesiones 11–20. |
 | `docs/pc2-respuestas.md` | Solución docente de PC02 con comandos, evidencia, decisiones, limitaciones y checklist de revisión. |
 | `docs/instrucciones-laboratorio-sesion-23.md` | Guía para estudiar Lamport clocks, orden parcial, concurrencia y desempate determinístico. |
+| `docs/instrucciones-laboratorio-sesion-29.md` | Guía para defender integración de sincronización y coordinación antes de PC3. |
 | `docs/instrucciones-laboratorio-sesion-28.md` | Guía para estudiar coordinación distribuida aplicada, leases, líder, sospechas y compensación. |
 | `docs/instrucciones-laboratorio-sesion-27.md` | Guía para estudiar elección de líder, heartbeats, detectores de fallas, sospechas falsas y recuperación. |
 | `docs/instrucciones-laboratorio-sesion-26.md` | Guía para estudiar locks distribuidos, leases, TTL, expiración, renovación y stale owner. |
@@ -638,6 +646,6 @@ Un avance de sesión está completo cuando cumple estas condiciones:
 
 ## Próximo paso
 
-El siguiente trabajo es la **Sesión 29: Laboratorio integrador de sincronización y coordinación**.
+El siguiente trabajo es la **Sesión 30: Práctica Calificada 3**.
 
-Ahí se integrarán las evidencias de sesiones 21–28 en un simulador de cierre para preparar PC3. Consenso completo, quórums productivos y membresía real siguen fuera del alcance de la Sesión 28.
+Ahí se evaluarán las evidencias de sesiones 21–29. Consenso completo, quórums productivos, membresía real, transacciones distribuidas y failover real siguen fuera del alcance de la Sesión 29.

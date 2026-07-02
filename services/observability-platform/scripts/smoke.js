@@ -7,7 +7,7 @@ const expectedChecks = [
     path: "/api/labs",
     validate: (body) => {
       const labs = JSON.parse(body).labs;
-      return labs.some((lab) => lab.id === "physical-time" && lab.session === 21) && labs.some((lab) => lab.id === "clock-sync" && lab.session === 22) && labs.some((lab) => lab.id === "lamport-ordering" && lab.session === 23) && labs.some((lab) => lab.id === "vector-clocks" && lab.session === 24) && labs.some((lab) => lab.id === "mutual-exclusion" && lab.session === 25) && labs.some((lab) => lab.id === "distributed-locks" && lab.session === 26) && labs.some((lab) => lab.id === "leader-election" && lab.session === 27) && labs.some((lab) => lab.id === "distributed-coordination" && lab.session === 28);
+      return labs.some((lab) => lab.id === "physical-time" && lab.session === 21) && labs.some((lab) => lab.id === "clock-sync" && lab.session === 22) && labs.some((lab) => lab.id === "lamport-ordering" && lab.session === 23) && labs.some((lab) => lab.id === "vector-clocks" && lab.session === 24) && labs.some((lab) => lab.id === "mutual-exclusion" && lab.session === 25) && labs.some((lab) => lab.id === "distributed-locks" && lab.session === 26) && labs.some((lab) => lab.id === "leader-election" && lab.session === 27) && labs.some((lab) => lab.id === "distributed-coordination" && lab.session === 28) && labs.some((lab) => lab.id === "coordination-integration" && lab.session === 29);
     }
   },
   {
@@ -93,6 +93,17 @@ const expectedChecks = [
     validate: (body) => {
       const payload = JSON.parse(body);
       return payload.labId === "distributed-coordination" && payload.session === 28 && payload.mode === "degraded-compensation" && payload.metrics.compensationApplied === true;
+    }
+  },
+  {
+    path: "/api/labs/coordination-integration/modes",
+    validate: (body) => JSON.parse(body).modes.some((mode) => mode.id === "suspected-leader-compensation")
+  },
+  {
+    path: "/api/labs/coordination-integration/run?mode=suspected-leader-compensation",
+    validate: (body) => {
+      const payload = JSON.parse(body);
+      return payload.labId === "coordination-integration" && payload.session === 29 && payload.mode === "suspected-leader-compensation" && payload.evidence.decision === "compensated";
     }
   },
   {

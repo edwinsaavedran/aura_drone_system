@@ -18,7 +18,7 @@ Fuente de verdad académica: `docs/GESTION SID 2026 I.pdf`.
 | 26 | Locks distribuidos, leases y riesgos operativos | Laboratorio determinístico `lab:distributed-locks`, tests, guía y visualización en plataforma. | Enseña por qué un lock distribuido necesita ownership temporal, TTL, expiración, renovación prudente y manejo de dueños stale. |
 | 27 | Elección de líder y detectores de fallas | Laboratorio determinístico `lab:leader-election`, tests, guía y visualización en plataforma. | Define quién coordina una acción cuando hay múltiples nodos candidatos y fallas parciales. |
 | 28 | Coordinación distribuida en escenarios reales | Laboratorio determinístico `lab:distributed-coordination`, tests, guía y visualización en plataforma. | Integra tiempo, causalidad, leases, líder, sospecha de fallas y compensación en decisiones defendibles. |
-| 29 | Laboratorio integrador de sincronización y coordinación | Simulador/laboratorio de integración. | Prepara la defensa técnica de PC3 con evidencia ejecutable. |
+| 29 | Laboratorio integrador de sincronización y coordinación | Laboratorio determinístico `lab:coordination-integration`, tests, guía y visualización en plataforma. | Prepara la defensa técnica de PC3 con evidencia ejecutable para aceptar, revisar o compensar una acción distribuida. |
 | 30 | Práctica Calificada 3 | Desarrollo y sustentación técnica. | Evalúa sincronización y coordinación distribuida. |
 
 ## Criterio de avance
@@ -39,6 +39,7 @@ Cada sesión debe dejar:
 - No convertir la Sesión 26 en elección de líder, quórum ni infraestructura completa de fencing; el token de fencing queda como evidencia de stale owner.
 - No convertir la Sesión 27 en consenso, Raft/Paxos, quórum, membresía productiva, failover real ni rediseño de locks/fencing; el detector de fallas queda como evidencia educativa.
 - No convertir la Sesión 28 en consenso, quórum, Raft/Paxos, membresía productiva ni failover real; la coordinación aplicada queda como razonamiento educativo con compensación.
+- No convertir la Sesión 29 en consenso, quórum, Raft/Paxos, membresía productiva, transacciones distribuidas ni failover real; la integración queda como defensa PC3 con evidencia de sesiones 21-28.
 
 ## Evidencia implementada
 
@@ -52,7 +53,8 @@ Cada sesión debe dejar:
 | 26 | `services/monitor-telemetria/src/distributed-locks-lab.js`, `services/monitor-telemetria/test/distributed-locks-lab.test.js`, `docs/instrucciones-laboratorio-sesion-26.md`, script `lab:distributed-locks`, modo observable `distributed-locks`. |
 | 27 | `services/monitor-telemetria/src/leader-election-lab.js`, `services/monitor-telemetria/test/leader-election-lab.test.js`, `docs/instrucciones-laboratorio-sesion-27.md`, script `lab:leader-election`, modo observable `leader-election`. |
 | 28 | `services/monitor-telemetria/src/distributed-coordination-lab.js`, `services/monitor-telemetria/test/distributed-coordination-lab.test.js`, `docs/instrucciones-laboratorio-sesion-28.md`, script `lab:distributed-coordination`, modo observable `distributed-coordination`. |
+| 29 | `services/monitor-telemetria/src/coordination-integration-lab.js`, `services/monitor-telemetria/test/coordination-integration-lab.test.js`, `docs/instrucciones-laboratorio-sesion-29.md`, script `lab:coordination-integration`, modo observable `coordination-integration`. |
 
 ## Siguiente paso
 
-Avanzar a la Sesión 29 con el laboratorio integrador de sincronización y coordinación. La Sesión 28 ya deja evidencia de handoff coordinado, prevención por lease vencido y compensación degradada sin mezclar consenso, quórum ni failover productivo.
+Avanzar a la Sesión 30 / PC3 usando la evidencia de la Sesión 29. La integración ya deja escenarios de acción aceptada, revisión por conflicto causal y compensación ante líder sospechado sin mezclar consenso, quórum, transacciones distribuidas ni failover productivo.

@@ -245,6 +245,33 @@ function renderDistributedCoordinationEvidence(evidence) {
   `;
 }
 
+function renderCoordinationIntegrationEvidence(evidence) {
+  if (!evidence?.integrationId) {
+    return "";
+  }
+
+  return `
+    <section class="decision coordination-integration-evidence" aria-label="Evidencia integradora de sincronización y coordinación">
+      <strong>Integración de sincronización y coordinación</strong>
+      ${renderKeyValueList({
+        "Integración": evidence.integrationId,
+        "Decisión": evidence.decision,
+        "Confianza": evidence.confidence,
+        "Skew máximo": evidence.physicalTime?.maxSkewMs !== undefined ? `${evidence.physicalTime.maxSkewMs} ms` : undefined,
+        "Sincronización confiable": evidence.clockSync?.trusted,
+        "Lamport insuficiente": evidence.lamport?.insufficiency,
+        "Vector concurrente": evidence.vectorClock?.concurrent,
+        "Conflicto causal": evidence.vectorClock?.conflictDetected,
+        "Lease vigente": evidence.lease?.validAtAction,
+        "Líder estable": evidence.leader?.stable,
+        "Líder sospechado": evidence.failureSuspicion?.suspected,
+        "Compensación": evidence.compensation?.applied ? evidence.compensation.action : "No aplicada",
+        "Límite": evidence.boundary
+      })}
+    </section>
+  `;
+}
+
 function renderResult(result) {
   renderedSelection = { labId: result.labId, mode: result.mode };
   summaryContent.innerHTML = [
@@ -272,6 +299,7 @@ function renderResult(result) {
     renderLeaseEvidence(result.evidence),
     renderLeaderElectionEvidence(result.evidence),
     renderDistributedCoordinationEvidence(result.evidence),
+    renderCoordinationIntegrationEvidence(result.evidence),
     renderItems(result.recommendations),
     ...decisionItems
   ].join("");
@@ -312,7 +340,7 @@ async function loadLabs() {
   labSelect.innerHTML = labs
     .map((lab) => `<option value="${escapeHtml(lab.id)}">Sesión ${escapeHtml(lab.session)} · ${escapeHtml(lab.title)}</option>`)
     .join("");
-  labSelect.value = labs.find((lab) => lab.id === "distributed-coordination")?.id ?? labs.find((lab) => lab.id === "leader-election")?.id ?? labs.find((lab) => lab.id === "distributed-locks")?.id ?? labs.find((lab) => lab.id === "mutual-exclusion")?.id ?? labs.find((lab) => lab.id === "vector-clocks")?.id ?? labs.find((lab) => lab.id === "lamport-ordering")?.id ?? labs.find((lab) => lab.id === "clock-sync")?.id ?? labs[0]?.id ?? "";
+  labSelect.value = labs.find((lab) => lab.id === "coordination-integration")?.id ?? labs.find((lab) => lab.id === "distributed-coordination")?.id ?? labs.find((lab) => lab.id === "leader-election")?.id ?? labs.find((lab) => lab.id === "distributed-locks")?.id ?? labs.find((lab) => lab.id === "mutual-exclusion")?.id ?? labs.find((lab) => lab.id === "vector-clocks")?.id ?? labs.find((lab) => lab.id === "lamport-ordering")?.id ?? labs.find((lab) => lab.id === "clock-sync")?.id ?? labs[0]?.id ?? "";
   renderSelectedLabMetadata();
 }
 

@@ -18,6 +18,7 @@ const expectedMutualExclusionModeIds = ["contended-queue", "fairness-rounds", "c
 const expectedDistributedLocksModeIds = ["lock-acquire-and-hold", "lease-expiry-and-reacquire", "renewal-jitter-and-risk", "stale-owner-and-fencing-warning"];
 const expectedLeaderElectionModeIds = ["stable-leader-heartbeats", "leader-failure-and-reelection", "false-suspicion-timeout", "leader-recovery-rejoin"];
 const expectedDistributedCoordinationModeIds = ["coordinated-dispatch-handoff", "expired-lease-prevention", "degraded-compensation"];
+const expectedCoordinationIntegrationModeIds = ["pc3-ready-happy-path", "causal-conflict-review", "suspected-leader-compensation"];
 
 function listen(server) {
   return new Promise((resolve) => {
@@ -93,7 +94,7 @@ test("health endpoint reports service readiness", async () => {
   }
 });
 
-test("labs endpoint lists Session 21 through Session 28 labs", async () => {
+test("labs endpoint lists Session 21 through Session 29 labs", async () => {
   const server = createServer();
   const port = await listen(server);
 
@@ -102,7 +103,7 @@ test("labs endpoint lists Session 21 through Session 28 labs", async () => {
     const payload = await response.json();
 
     assert.equal(response.status, 200);
-    assert.deepEqual(payload.labs.map((lab) => lab.id), ["physical-time", "clock-sync", "lamport-ordering", "vector-clocks", "mutual-exclusion", "distributed-locks", "leader-election", "distributed-coordination"]);
+    assert.deepEqual(payload.labs.map((lab) => lab.id), ["physical-time", "clock-sync", "lamport-ordering", "vector-clocks", "mutual-exclusion", "distributed-locks", "leader-election", "distributed-coordination", "coordination-integration"]);
     assert.equal(payload.labs.find((lab) => lab.id === "physical-time").session, 21);
     assert.equal(payload.labs.find((lab) => lab.id === "clock-sync").session, 22);
     assert.equal(payload.labs.find((lab) => lab.id === "lamport-ordering").session, 23);
@@ -111,6 +112,7 @@ test("labs endpoint lists Session 21 through Session 28 labs", async () => {
     assert.equal(payload.labs.find((lab) => lab.id === "distributed-locks").session, 26);
     assert.equal(payload.labs.find((lab) => lab.id === "leader-election").session, 27);
     assert.equal(payload.labs.find((lab) => lab.id === "distributed-coordination").session, 28);
+    assert.equal(payload.labs.find((lab) => lab.id === "coordination-integration").session, 29);
   } finally {
     await close(server);
   }
@@ -253,6 +255,21 @@ test("distributed coordination modes endpoint returns every Session 28 mode", as
   }
 });
 
+test("coordination integration modes endpoint returns every Session 29 mode", async () => {
+  const server = createServer();
+  const port = await listen(server);
+
+  try {
+    const response = await fetch(`http://127.0.0.1:${port}/api/labs/coordination-integration/modes`);
+    const payload = await response.json();
+
+    assert.equal(response.status, 200);
+    assert.deepEqual(payload.modes.map((mode) => mode.id), expectedCoordinationIntegrationModeIds);
+  } finally {
+    await close(server);
+  }
+});
+
 test("physical time run endpoint executes drift mode", async () => {
   const server = createServer();
   const port = await listen(server);
@@ -293,6 +310,8 @@ test("generic lab run endpoint uses each lab default mode", async () => {
     const leaderPayload = await leaderResponse.json();
     const coordinationResponse = await fetch(`http://127.0.0.1:${port}/api/labs/distributed-coordination/run`);
     const coordinationPayload = await coordinationResponse.json();
+    const integrationResponse = await fetch(`http://127.0.0.1:${port}/api/labs/coordination-integration/run`);
+    const integrationPayload = await integrationResponse.json();
 
     assert.equal(physicalResponse.status, 200);
     assert.equal(physicalPayload.mode, "normal");
@@ -310,6 +329,8 @@ test("generic lab run endpoint uses each lab default mode", async () => {
     assert.equal(leaderPayload.mode, "stable-leader-heartbeats");
     assert.equal(coordinationResponse.status, 200);
     assert.equal(coordinationPayload.mode, "coordinated-dispatch-handoff");
+    assert.equal(integrationResponse.status, 200);
+    assert.equal(integrationPayload.mode, "pc3-ready-happy-path");
   } finally {
     await close(server);
   }
@@ -409,6 +430,42 @@ test("distributed coordination run endpoint rejects invalid modes", async () => 
 
   try {
     const response = await fetch(`http://127.0.0.1:${port}/api/labs/distributed-coordination/run?mode=raft`);
+    const payload = await response.json();
+
+    assert.equal(response.status, 400);
+    assert.match(payload.error, /not available/);
+  } finally {
+    await close(server);
+  }
+});
+
+test("coordination integration run endpoint executes suspected leader compensation mode", async () => {
+  const server = createServer();
+  const port = await listen(server);
+
+  try {
+    const response = await fetch(`http://127.0.0.1:${port}/api/labs/coordination-integration/run?mode=suspected-leader-compensation`);
+    const payload = await response.json();
+
+    assert.equal(response.status, 200);
+    assert.equal(payload.labId, "coordination-integration");
+    assert.equal(payload.session, 29);
+    assert.equal(payload.mode, "suspected-leader-compensation");
+    assert.equal(payload.evidence.decision, "compensated");
+    assert.equal(payload.metrics.leaderSuspected, true);
+    assert.equal(payload.metrics.compensationApplied, true);
+    assert.match(payload.evidence.boundary, /does not implement consensus, quorum/);
+  } finally {
+    await close(server);
+  }
+});
+
+test("coordination integration run endpoint rejects invalid modes", async () => {
+  const server = createServer();
+  const port = await listen(server);
+
+  try {
+    const response = await fetch(`http://127.0.0.1:${port}/api/labs/coordination-integration/run?mode=raft`);
     const payload = await response.json();
 
     assert.equal(response.status, 400);
