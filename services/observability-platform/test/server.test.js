@@ -16,6 +16,7 @@ const expectedLamportModeIds = ["causal-chain", "concurrent-events", "merge-and-
 const expectedVectorClockModeIds = ["causal-chain", "concurrent-events", "merge-and-conflict"];
 const expectedMutualExclusionModeIds = ["contended-queue", "fairness-rounds", "critical-section-safety", "delay-and-reorder"];
 const expectedDistributedLocksModeIds = ["lock-acquire-and-hold", "lease-expiry-and-reacquire", "renewal-jitter-and-risk", "stale-owner-and-fencing-warning"];
+const expectedLeaderElectionModeIds = ["stable-leader-heartbeats", "leader-failure-and-reelection", "false-suspicion-timeout", "leader-recovery-rejoin"];
 
 function listen(server) {
   return new Promise((resolve) => {
@@ -91,7 +92,7 @@ test("health endpoint reports service readiness", async () => {
   }
 });
 
-test("labs endpoint lists Session 21 through Session 26 labs", async () => {
+test("labs endpoint lists Session 21 through Session 27 labs", async () => {
   const server = createServer();
   const port = await listen(server);
 
@@ -100,13 +101,14 @@ test("labs endpoint lists Session 21 through Session 26 labs", async () => {
     const payload = await response.json();
 
     assert.equal(response.status, 200);
-    assert.deepEqual(payload.labs.map((lab) => lab.id), ["physical-time", "clock-sync", "lamport-ordering", "vector-clocks", "mutual-exclusion", "distributed-locks"]);
+    assert.deepEqual(payload.labs.map((lab) => lab.id), ["physical-time", "clock-sync", "lamport-ordering", "vector-clocks", "mutual-exclusion", "distributed-locks", "leader-election"]);
     assert.equal(payload.labs.find((lab) => lab.id === "physical-time").session, 21);
     assert.equal(payload.labs.find((lab) => lab.id === "clock-sync").session, 22);
     assert.equal(payload.labs.find((lab) => lab.id === "lamport-ordering").session, 23);
     assert.equal(payload.labs.find((lab) => lab.id === "vector-clocks").session, 24);
     assert.equal(payload.labs.find((lab) => lab.id === "mutual-exclusion").session, 25);
     assert.equal(payload.labs.find((lab) => lab.id === "distributed-locks").session, 26);
+    assert.equal(payload.labs.find((lab) => lab.id === "leader-election").session, 27);
   } finally {
     await close(server);
   }
@@ -219,6 +221,21 @@ test("distributed locks modes endpoint returns every Session 26 mode", async () 
   }
 });
 
+test("leader election modes endpoint returns every Session 27 mode", async () => {
+  const server = createServer();
+  const port = await listen(server);
+
+  try {
+    const response = await fetch(`http://127.0.0.1:${port}/api/labs/leader-election/modes`);
+    const payload = await response.json();
+
+    assert.equal(response.status, 200);
+    assert.deepEqual(payload.modes.map((mode) => mode.id), expectedLeaderElectionModeIds);
+  } finally {
+    await close(server);
+  }
+});
+
 test("physical time run endpoint executes drift mode", async () => {
   const server = createServer();
   const port = await listen(server);
@@ -255,6 +272,8 @@ test("generic lab run endpoint uses each lab default mode", async () => {
     const mutualPayload = await mutualResponse.json();
     const locksResponse = await fetch(`http://127.0.0.1:${port}/api/labs/distributed-locks/run`);
     const locksPayload = await locksResponse.json();
+    const leaderResponse = await fetch(`http://127.0.0.1:${port}/api/labs/leader-election/run`);
+    const leaderPayload = await leaderResponse.json();
 
     assert.equal(physicalResponse.status, 200);
     assert.equal(physicalPayload.mode, "normal");
@@ -268,6 +287,8 @@ test("generic lab run endpoint uses each lab default mode", async () => {
     assert.equal(mutualPayload.mode, "contended-queue");
     assert.equal(locksResponse.status, 200);
     assert.equal(locksPayload.mode, "lock-acquire-and-hold");
+    assert.equal(leaderResponse.status, 200);
+    assert.equal(leaderPayload.mode, "stable-leader-heartbeats");
   } finally {
     await close(server);
   }
@@ -298,6 +319,40 @@ test("distributed locks run endpoint rejects invalid modes", async () => {
 
   try {
     const response = await fetch(`http://127.0.0.1:${port}/api/labs/distributed-locks/run?mode=leader-election`);
+    const payload = await response.json();
+
+    assert.equal(response.status, 400);
+    assert.match(payload.error, /not available/);
+  } finally {
+    await close(server);
+  }
+});
+
+test("leader election run endpoint executes failure and reelection mode", async () => {
+  const server = createServer();
+  const port = await listen(server);
+
+  try {
+    const response = await fetch(`http://127.0.0.1:${port}/api/labs/leader-election/run?mode=leader-failure-and-reelection`);
+    const payload = await response.json();
+
+    assert.equal(response.status, 200);
+    assert.equal(payload.labId, "leader-election");
+    assert.equal(payload.session, 27);
+    assert.equal(payload.mode, "leader-failure-and-reelection");
+    assert.equal(payload.metrics.leaderChanges, 1);
+    assert.match(payload.evidence.scopeWarning, /out of scope/);
+  } finally {
+    await close(server);
+  }
+});
+
+test("leader election run endpoint rejects invalid modes", async () => {
+  const server = createServer();
+  const port = await listen(server);
+
+  try {
+    const response = await fetch(`http://127.0.0.1:${port}/api/labs/leader-election/run?mode=raft`);
     const payload = await response.json();
 
     assert.equal(response.status, 400);

@@ -15,11 +15,12 @@ const expectedLamportModeIds = ["causal-chain", "concurrent-events", "merge-and-
 const expectedVectorClockModeIds = ["causal-chain", "concurrent-events", "merge-and-conflict"];
 const expectedMutualExclusionModeIds = ["contended-queue", "fairness-rounds", "critical-section-safety", "delay-and-reorder"];
 const expectedDistributedLocksModeIds = ["lock-acquire-and-hold", "lease-expiry-and-reacquire", "renewal-jitter-and-risk", "stale-owner-and-fencing-warning"];
+const expectedLeaderElectionModeIds = ["stable-leader-heartbeats", "leader-failure-and-reelection", "false-suspicion-timeout", "leader-recovery-rejoin"];
 
-test("lab registry lists Session 21 through Session 26 labs", () => {
+test("lab registry lists Session 21 through Session 27 labs", () => {
   const labs = listLabs();
 
-  assert.deepEqual(labs.map((lab) => lab.id), ["physical-time", "clock-sync", "lamport-ordering", "vector-clocks", "mutual-exclusion", "distributed-locks"]);
+  assert.deepEqual(labs.map((lab) => lab.id), ["physical-time", "clock-sync", "lamport-ordering", "vector-clocks", "mutual-exclusion", "distributed-locks", "leader-election"]);
   assert.equal(labs.find((lab) => lab.id === "physical-time").session, 21);
   assert.equal(labs.find((lab) => lab.id === "physical-time").defaultMode, "normal");
   assert.match(labs.find((lab) => lab.id === "clock-sync").relationship, /Sesión 21/);
@@ -31,6 +32,8 @@ test("lab registry lists Session 21 through Session 26 labs", () => {
   assert.match(labs.find((lab) => lab.id === "mutual-exclusion").relationship, /Sesión 26/);
   assert.equal(labs.find((lab) => lab.id === "distributed-locks").session, 26);
   assert.match(labs.find((lab) => lab.id === "distributed-locks").relationship, /Sesión 27/);
+  assert.equal(labs.find((lab) => lab.id === "leader-election").session, 27);
+  assert.match(labs.find((lab) => lab.id === "leader-election").relationship, /Sesión 28/);
 });
 
 test("lab registry lists modes and runs clock sync scenario analysis", () => {
@@ -135,6 +138,24 @@ test("lab registry lists modes and runs Distributed locks Session 26 acquire and
 test("lab registry runs each Distributed locks mode", () => {
   listLabModes("distributed-locks").forEach((mode) => {
     const result = runLab("distributed-locks", mode.id);
+
+    assert.equal(result.mode, mode.id);
+  });
+});
+
+test("lab registry lists modes and runs Leader election Session 27 stable leader", () => {
+  assert.deepEqual(listLabModes("leader-election").map((mode) => mode.id), expectedLeaderElectionModeIds);
+
+  const result = runLab("leader-election", "stable-leader-heartbeats");
+  assert.equal(result.labId, "leader-election");
+  assert.equal(result.session, 27);
+  assert.equal(result.metrics.leaderChanges, 0);
+  assert.equal(result.raw.mode, "stable-leader-heartbeats");
+});
+
+test("lab registry runs each Leader election mode", () => {
+  listLabModes("leader-election").forEach((mode) => {
+    const result = runLab("leader-election", mode.id);
 
     assert.equal(result.mode, mode.id);
   });

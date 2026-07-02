@@ -13,6 +13,7 @@
     "lab:vector-clocks": "node src/vector-clocks-lab.js",
     "lab:mutual-exclusion": "node src/mutual-exclusion-lab.js",
     "lab:distributed-locks": "node src/distributed-locks-lab.js",
+    "lab:leader-election": "node src/leader-election-lab.js",
     "test": "node --test"
   },
   "dependencies": {

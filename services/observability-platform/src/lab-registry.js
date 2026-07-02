@@ -1,6 +1,7 @@
 const { listClockSyncModes, runClockSyncLab } = require("./adapters/clock-sync-adapter");
 const { listDistributedLocksModes, runDistributedLocksObservabilityLab } = require("./adapters/distributed-locks-adapter");
 const { listLamportOrderingModes, runLamportOrderingObservabilityLab } = require("./adapters/lamport-ordering-adapter");
+const { listLeaderElectionModes, runLeaderElectionObservabilityLab } = require("./adapters/leader-election-adapter");
 const { listMutualExclusionModes, runMutualExclusionObservabilityLab } = require("./adapters/mutual-exclusion-adapter");
 const { listPhysicalTimeModes, runPhysicalTimeObservabilityLab } = require("./adapters/physical-time-adapter");
 const { listVectorClocksModes, runVectorClocksObservabilityLab } = require("./adapters/vector-clocks-adapter");
@@ -61,10 +62,20 @@ const labs = [
     session: 26,
     title: "Locks distribuidos, leases y riesgos operativos",
     purpose: "Observar ownership temporal, expiración, reacquisición, renovación riesgosa y owner stale sin adelantar liderazgo ni quórum.",
-    relationship: "Extiende exclusión mutua de la Sesión 25 y prepara elección de líder/failure detectors en la Sesión 27",
+    relationship: "Extiende exclusión mutua de la Sesión 25 y prepara elección de líder/detectores de fallas en la Sesión 27",
     defaultMode: "lock-acquire-and-hold",
     modes: listDistributedLocksModes,
     run: runDistributedLocksObservabilityLab
+  },
+  {
+    id: "leader-election",
+    session: 27,
+    title: "Elección de líder y detectores de fallas",
+    purpose: "Comparar líder estable, sospecha por timeout, reelección, sospecha falsa y reincorporación con evidencia determinística.",
+    relationship: "Extiende locks/leases de la Sesión 26 y prepara coordinación distribuida aplicada en la Sesión 28",
+    defaultMode: "stable-leader-heartbeats",
+    modes: listLeaderElectionModes,
+    run: runLeaderElectionObservabilityLab
   }
 ];
 

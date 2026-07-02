@@ -195,6 +195,31 @@ function renderLeaseEvidence(evidence) {
   `;
 }
 
+function renderLeaderElectionEvidence(evidence) {
+  if (!evidence?.detectorType) {
+    return "";
+  }
+
+  return `
+    <section class="decision leader-election-evidence" aria-label="Evidencia de elección de líder">
+      <strong>Elección de líder</strong>
+      ${renderKeyValueList({
+        "Cluster": evidence.clusterId,
+        "Detector": evidence.detectorType,
+        "Líder inicial": evidence.initialLeader,
+        "Líder final": evidence.finalLeader,
+        "Regla de elección": evidence.electionRule,
+        "Timeout": evidence.timeoutPolicy?.failureTimeoutMs !== undefined ? `${evidence.timeoutPolicy.failureTimeoutMs} ms` : undefined,
+        "Sospechados": evidence.suspectedNodes?.length ? evidence.suspectedNodes.join(", ") : "Ninguno",
+        "Sospechas falsas": evidence.falseSuspicionSubjects?.length ? evidence.falseSuspicionSubjects.join(", ") : "Ninguna",
+        "Nodo recuperado": evidence.recoveredNode ? `${evidence.recoveredNode.nodeId} como ${evidence.recoveredNode.roleAfterRecovery}` : undefined,
+        "Advertencia de alcance": evidence.scopeWarning
+      })}
+    </section>
+  `;
+}
+
+
 function renderResult(result) {
   renderedSelection = { labId: result.labId, mode: result.mode };
   summaryContent.innerHTML = [
@@ -220,6 +245,7 @@ function renderResult(result) {
     renderItems(result.observations),
     renderLifecycleEvidence(result.evidence),
     renderLeaseEvidence(result.evidence),
+    renderLeaderElectionEvidence(result.evidence),
     renderItems(result.recommendations),
     ...decisionItems
   ].join("");
@@ -260,7 +286,7 @@ async function loadLabs() {
   labSelect.innerHTML = labs
     .map((lab) => `<option value="${escapeHtml(lab.id)}">Sesión ${escapeHtml(lab.session)} · ${escapeHtml(lab.title)}</option>`)
     .join("");
-  labSelect.value = labs.find((lab) => lab.id === "distributed-locks")?.id ?? labs.find((lab) => lab.id === "mutual-exclusion")?.id ?? labs.find((lab) => lab.id === "vector-clocks")?.id ?? labs.find((lab) => lab.id === "lamport-ordering")?.id ?? labs.find((lab) => lab.id === "clock-sync")?.id ?? labs[0]?.id ?? "";
+  labSelect.value = labs.find((lab) => lab.id === "leader-election")?.id ?? labs.find((lab) => lab.id === "distributed-locks")?.id ?? labs.find((lab) => lab.id === "mutual-exclusion")?.id ?? labs.find((lab) => lab.id === "vector-clocks")?.id ?? labs.find((lab) => lab.id === "lamport-ordering")?.id ?? labs.find((lab) => lab.id === "clock-sync")?.id ?? labs[0]?.id ?? "";
   renderSelectedLabMetadata();
 }
 

@@ -6,7 +6,7 @@ El objetivo no es “hacer endpoints porque sí”. El objetivo es que el estudi
 
 ## Estado actual
 
-El estado actual del repo es **Unidad 2 cerrada con PC02** y **Unidad 3 consolidada hasta la Sesión 26 implementada**.
+El estado actual del repo es **Unidad 2 cerrada con PC02** y **Unidad 3 consolidada hasta la Sesión 27 implementada**.
 
 Esto significa que el proyecto ya no debe leerse solo como una secuencia de laboratorios. La **Práctica Calificada 02** cierra resiliencia, semánticas de entrega, backpressure, patrones de comunicación, naming y discovery básico. La **Unidad 3** empieza desde ese piso para estudiar tiempo, orden, causalidad y coordinación distribuida.
 
@@ -19,7 +19,7 @@ docs/pc2-respuestas.md     # solución docente, evidencia y decisiones técnicas
 
 | Área | Estado |
 |---|---|
-| Hito vigente | **PC02 cerrada; Unidad 3 consolidada hasta Sesión 26 implementada**. |
+| Hito vigente | **PC02 cerrada; Unidad 3 consolidada hasta Sesión 27 implementada**. |
 | Arquitectura base | Alineada y documentada para sesiones 11–18. |
 | REST v1 | Implementado en `gestor-flota`, `centro-logistica` y `planificador-rutas`. |
 | gRPC | Implementado en `monitor-telemetria`. |
@@ -28,7 +28,7 @@ docs/pc2-respuestas.md     # solución docente, evidencia y decisiones técnicas
 | Patrones de comunicación | Laboratorio in-memory para request/response, pub/sub, cola FIFO y streaming. |
 | Backpressure | Laboratorio in-memory para presión de streaming, cola bounded, backlog, drops/sampling y retry. |
 | Naming/discovery | Comunicación inter-servicio mediante configuración y nombres lógicos en Docker Compose. |
-| Tiempo físico, sincronización, causalidad y coordinación | Laboratorios determinísticos en `monitor-telemetria` para wall-clock, monotonic clock, skew, drift, tolerancia, offset, delay, corrección, confianza, Lamport clocks, vector clocks, `happened-before`, concurrencia, exclusión mutua distribuida, locks, leases, TTL, expiración y stale owner. |
+| Tiempo físico, sincronización, causalidad y coordinación | Laboratorios determinísticos en `monitor-telemetria` para wall-clock, monotonic clock, skew, drift, tolerancia, offset, delay, corrección, confianza, Lamport clocks, vector clocks, `happened-before`, concurrencia, exclusión mutua distribuida, locks, leases, TTL, expiración, stale owner, elección de líder, heartbeats, sospechas y detectores de fallas. |
 | Tests | Suites por servicio con `npm test`. |
 
 ## Qué queda construido al cierre de PC02
@@ -135,7 +135,7 @@ cd services/observability-platform
 npm run smoke
 ```
 
-El smoke test valida `/health`, `/api/labs`, los modos y ejecuciones principales de `physical-time`, `clock-sync`, `lamport-ordering`, `vector-clocks`, `mutual-exclusion` y `distributed-locks`, `/` y `/app.js` contra `http://localhost:8010`.
+El smoke test valida `/health`, `/api/labs`, los modos y ejecuciones principales de `physical-time`, `clock-sync`, `lamport-ordering`, `vector-clocks`, `mutual-exclusion`, `distributed-locks` y `leader-election`, `/` y `/app.js` contra `http://localhost:8010`.
 
 ### Por servicio
 
@@ -192,7 +192,7 @@ La Unidad 3 parte de una pregunta incómoda pero necesaria: si cada nodo observa
 | **24** | Vector clocks y causalidad | Laboratorio `lab:vector-clocks`, tests, guía y visualización en observability-platform. | Distingue eventos causalmente relacionados de eventos concurrentes con más precisión. |
 | **25** | Exclusión mutua distribuida | Laboratorio `lab:mutual-exclusion`, tests, guía y visualización en observability-platform. | Modela de forma determinística cómo arbitrar el acceso a una sección crítica compartida; no es una implementación productiva de mutex distribuido. |
 | **26** | Locks distribuidos, leases y riesgos operativos | Laboratorio `lab:distributed-locks`, tests, guía y visualización en observability-platform. | Muestra por qué un lock distribuido necesita ownership temporal, TTL, expiración, renovación prudente y manejo de dueños stale. |
-| 27 | Elección de líder y failure detectors | Laboratorio posterior de liderazgo ante fallas parciales. | Permitirá decidir quién coordina cuando hay múltiples nodos candidatos. |
+| **27** | Elección de líder y detectores de fallas | Laboratorio `lab:leader-election`, tests, guía y visualización en observability-platform. | Permite decidir quién coordina cuando hay múltiples nodos candidatos y fallas parciales. |
 | 28 | Coordinación distribuida en escenarios reales | Diseño aplicado sobre escenarios AURA con múltiples nodos. | Integrará tiempo, causalidad, locks, líder y fallas en una decisión defendible. |
 | 29 | Laboratorio integrador de sincronización y coordinación | Simulador/laboratorio integrador. | Preparará evidencia técnica para PC3. |
 | 30 | Práctica Calificada 3 | Desarrollo y sustentación técnica. | Evaluará sincronización y coordinación distribuida. |
@@ -230,9 +230,9 @@ Regla de trabajo por sesión:
 4. implementación mínima;
 5. evidencia para defender la decisión.
 
-## Base didáctica actual: Sesiones 21, 22, 23, 24, 25 y 26
+## Base didáctica actual: Sesiones 21, 22, 23, 24, 25, 26 y 27
 
-La plataforma de observabilidad expone seis laboratorios conectados:
+La plataforma de observabilidad expone siete laboratorios conectados:
 
 - **Sesión 21 — Tiempo físico:** muestra wall-clock, monotonic clock, skew, drift y ventanas de tolerancia.
 - **Sesión 22 — Sincronización de relojes:** construye sobre esa base para estimar offset/delay, aplicar correcciones y evaluar confianza.
@@ -240,8 +240,9 @@ La plataforma de observabilidad expone seis laboratorios conectados:
 - **Sesión 24 — Vector clocks:** compara vectores para distinguir causalidad, igualdad y concurrencia incomparables.
 - **Sesión 25 — Exclusión mutua distribuida:** usa una simulación educativa con arbitraje determinístico por timestamp lógico y `nodeId` para estudiar una sección crítica compartida, sin presentarse como mutex distribuido productivo.
 - **Sesión 26 — Locks distribuidos y leases:** modela ownership temporal con TTL, expiración, renovación con jitter, stale owner y advertencia de fencing como evidencia.
+- **Sesión 27 — Elección de líder y detectores de fallas:** compara líder estable, falla, reelección, sospecha falsa y reincorporación con heartbeats y timeouts simulados.
 
-La Sesión 26 consolida el paso de exclusión mutua base a ownership temporal:
+La Sesión 27 consolida el paso de ownership temporal a liderazgo educativo con límites explícitos:
 
 ```text
 Lamport local event: counter = counter + 1
@@ -259,6 +260,10 @@ lease ownership: owner + acquiredAt + leaseDeadline
 leaseDeadline: acquiredAt + ttlMs
 stale owner: acción posterior a expiredAt o con fencingToken anterior
 fencing token: evidencia de generación, no infraestructura completa en esta sesión
+leader election: mayor prioridad entre candidatos no sospechados
+detector de fallas: silencio desde último heartbeat recibido por el observador >= failureTimeoutMs
+false suspicion: heartbeat tardío puede limpiar una sospecha
+rejoin: nodo recuperado vuelve como follower para evitar thrashing
 ```
 
 Comandos principales:
@@ -279,6 +284,10 @@ npm run lab:distributed-locks -- --lock-acquire-and-hold
 npm run lab:distributed-locks -- --lease-expiry-and-reacquire
 npm run lab:distributed-locks -- --renewal-jitter-and-risk
 npm run lab:distributed-locks -- --stale-owner-and-fencing-warning
+npm run lab:leader-election -- --stable-leader-heartbeats
+npm run lab:leader-election -- --leader-failure-and-reelection
+npm run lab:leader-election -- --false-suspicion-timeout
+npm run lab:leader-election -- --leader-recovery-rejoin
 ```
 
 Visualización educativa:
@@ -288,9 +297,9 @@ cd services/observability-platform
 npm start
 ```
 
-Luego abre `http://localhost:8010` para revisar el cockpit de observabilidad de las Sesiones 21, 22, 23, 24, 25 y 26. La Sesión 26 queda activa y la Sesión 27 queda como siguiente paso para elección de líder y failure detectors.
+Luego abre `http://localhost:8010` para revisar el cockpit de observabilidad de las Sesiones 21, 22, 23, 24, 25, 26 y 27. La Sesión 27 queda activa como laboratorio actual de elección de líder y detectores de fallas.
 
-Guías completas de la base 21-26:
+Guías completas de la base 21-27:
 
 ```text
 docs/instrucciones-laboratorio-sesion-21.md
@@ -299,15 +308,16 @@ docs/instrucciones-laboratorio-sesion-23.md
 docs/instrucciones-laboratorio-sesion-24.md
 docs/instrucciones-laboratorio-sesion-25.md
 docs/instrucciones-laboratorio-sesion-26.md
+docs/instrucciones-laboratorio-sesion-27.md
 ```
 
-Guía detallada de la Sesión 26:
+Guía detallada de la Sesión 27:
 
 ```text
-docs/instrucciones-laboratorio-sesion-26.md
+docs/instrucciones-laboratorio-sesion-27.md
 ```
 
-Alcance explícito: la Sesión 26 no implementa elección de líder, quórum ni infraestructura completa de fencing. El `fencingToken` se usa solo como evidencia para advertir o rechazar acciones de un owner stale.
+Alcance explícito: la Sesión 27 no implementa consenso, quórum, Raft/Paxos, membresía productiva, failover real ni rediseño de locks/fencing. El detector de fallas se usa solo como evidencia educativa para discutir sospechas, reelección y reincorporación.
 
 ## Laboratorio anterior: Sesión 25
 
@@ -594,6 +604,7 @@ docs/instrucciones-laboratorio-sesion-15.md
 | `docs/unidad-2-backlog.md` | Backlog y cronograma detallado de sesiones 11–20. |
 | `docs/pc2-respuestas.md` | Solución docente de PC02 con comandos, evidencia, decisiones, limitaciones y checklist de revisión. |
 | `docs/instrucciones-laboratorio-sesion-23.md` | Guía para estudiar Lamport clocks, orden parcial, concurrencia y desempate determinístico. |
+| `docs/instrucciones-laboratorio-sesion-27.md` | Guía para estudiar elección de líder, heartbeats, detectores de fallas, sospechas falsas y recuperación. |
 | `docs/instrucciones-laboratorio-sesion-26.md` | Guía para estudiar locks distribuidos, leases, TTL, expiración, renovación y stale owner. |
 | `docs/instrucciones-laboratorio-sesion-25.md` | Guía para estudiar exclusión mutua distribuida, cola de requests y sección crítica. |
 | `docs/instrucciones-laboratorio-sesion-22.md` | Guía para estudiar sincronización de relojes, offset, delay, corrección, stale sync y confianza. |
@@ -618,6 +629,6 @@ Un avance de sesión está completo cuando cumple estas condiciones:
 
 ## Próximo paso
 
-El siguiente trabajo es la **Sesión 27: Elección de líder y failure detectors**.
+El siguiente trabajo es la **Sesión 28: Coordinación distribuida en escenarios reales**.
 
-Ahí se va a estudiar quién coordina una acción cuando hay múltiples nodos candidatos y fallas parciales. La elección de líder, los quórums y un fencing completo siguen fuera del alcance de la Sesión 26.
+Ahí se integrarán tiempo, causalidad, locks, líder y fallas en decisiones defendibles para escenarios AURA. Consenso completo, quórums productivos y membresía real siguen fuera del alcance de la Sesión 27.
