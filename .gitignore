@@ -12,7 +12,7 @@ docs/*
 !docs/pc2-respuestas.md
 !docs/unidad-3-backlog.md
 !docs/GESTION SID 2026 I.pdf
-
+!docs/pc3-respuestas.md
 # Environment and secrets
 .env
 .env.*
