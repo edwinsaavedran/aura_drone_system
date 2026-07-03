@@ -19,7 +19,7 @@ Fuente de verdad académica: `docs/GESTION SID 2026 I.pdf`.
 | 27 | Elección de líder y detectores de fallas | Laboratorio determinístico `lab:leader-election`, tests, guía y visualización en plataforma. | Define quién coordina una acción cuando hay múltiples nodos candidatos y fallas parciales. |
 | 28 | Coordinación distribuida en escenarios reales | Laboratorio determinístico `lab:distributed-coordination`, tests, guía y visualización en plataforma. | Integra tiempo, causalidad, leases, líder, sospecha de fallas y compensación en decisiones defendibles. |
 | 29 | Laboratorio integrador de sincronización y coordinación | Laboratorio determinístico `lab:coordination-integration`, tests, guía y visualización en plataforma. | Prepara la defensa técnica de PC3 con evidencia ejecutable para aceptar, revisar o compensar una acción distribuida. |
-| 30 | Práctica Calificada 3 | Desarrollo y sustentación técnica. | Evalúa sincronización y coordinación distribuida. |
+| 30 | Práctica Calificada 3 - AURA: Coordinación bajo falla | `docs/instrucciones-laboratorio-sesion-30.md`, `docs/pc3-respuestas.md`, implementación acotada y evidencia de ejecución. | Evalúa aplicación integrada de sincronización, causalidad, leases, fencing, detectores de fallas, elección de líder y decisión arquitectónica. |
 
 ## Criterio de avance
 
@@ -40,6 +40,7 @@ Cada sesión debe dejar:
 - No convertir la Sesión 27 en consenso, Raft/Paxos, quórum, membresía productiva, failover real ni rediseño de locks/fencing; el detector de fallas queda como evidencia educativa.
 - No convertir la Sesión 28 en consenso, quórum, Raft/Paxos, membresía productiva ni failover real; la coordinación aplicada queda como razonamiento educativo con compensación.
 - No convertir la Sesión 29 en consenso, quórum, Raft/Paxos, membresía productiva, transacciones distribuidas ni failover real; la integración queda como defensa PC3 con evidencia de sesiones 21-28.
+- No convertir la Fase 5 de PC3 en implementación real de ZooKeeper, etcd, Raft, Paxos, consenso, quórum productivo, membresía productiva, transacciones distribuidas ni failover real; esas herramientas pueden recomendarse conceptualmente en la Fase 6 si se justifican garantías y tradeoffs.
 
 ## Evidencia implementada
 
@@ -54,7 +55,8 @@ Cada sesión debe dejar:
 | 27 | `services/monitor-telemetria/src/leader-election-lab.js`, `services/monitor-telemetria/test/leader-election-lab.test.js`, `docs/instrucciones-laboratorio-sesion-27.md`, script `lab:leader-election`, modo observable `leader-election`. |
 | 28 | `services/monitor-telemetria/src/distributed-coordination-lab.js`, `services/monitor-telemetria/test/distributed-coordination-lab.test.js`, `docs/instrucciones-laboratorio-sesion-28.md`, script `lab:distributed-coordination`, modo observable `distributed-coordination`. |
 | 29 | `services/monitor-telemetria/src/coordination-integration-lab.js`, `services/monitor-telemetria/test/coordination-integration-lab.test.js`, `docs/instrucciones-laboratorio-sesion-29.md`, script `lab:coordination-integration`, modo observable `coordination-integration`. |
+| 30 | `docs/instrucciones-laboratorio-sesion-30.md` como guía oficial de PC3; entrega esperada en `docs/pc3-respuestas.md`, implementación acotada recomendada en `services/centro-logistica/src/pc3-coordination-lab.js` y evidencia de ejecución. |
 
 ## Siguiente paso
 
-Avanzar a la Sesión 30 / PC3 usando la evidencia de la Sesión 29. La integración ya deja escenarios de acción aceptada, revisión por conflicto causal y compensación ante líder sospechado sin mezclar consenso, quórum, transacciones distribuidas ni failover productivo.
+Ejecutar la Sesión 30 / PC3 usando la evidencia de la Sesión 29 como entrenamiento previo. La evaluación pide aplicar la defensa integrada a un incidente nuevo: coordinación bajo falla con tiempo físico incierto, causalidad, leases, fencing, detector de fallas, elección de líder e interpretación arquitectónica sin implementar consenso real en la fase acotada.

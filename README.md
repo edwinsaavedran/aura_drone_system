@@ -6,7 +6,7 @@ El objetivo no es “hacer endpoints porque sí”. El objetivo es que el estudi
 
 ## Estado actual
 
-El estado actual del repo es **Unidad 2 cerrada con PC02** y **Unidad 3 consolidada hasta la Sesión 29 implementada**.
+El estado actual del repo es **Unidad 2 cerrada con PC02**, **Unidad 3 consolidada hasta la Sesión 29 implementada** y **Sesión 30 / PC3 documentada como evaluación aplicada**.
 
 Esto significa que el proyecto ya no debe leerse solo como una secuencia de laboratorios. La **Práctica Calificada 02** cierra resiliencia, semánticas de entrega, backpressure, patrones de comunicación, naming y discovery básico. La **Unidad 3** empieza desde ese piso para estudiar tiempo, orden, causalidad y coordinación distribuida.
 
@@ -15,11 +15,13 @@ Ruta principal para revisar el hito actual:
 ```text
 docs/PC02-20261.pdf        # enunciado original de la práctica
 docs/pc2-respuestas.md     # solución docente, evidencia y decisiones técnicas
+docs/instrucciones-laboratorio-sesion-30.md  # guía oficial de PC3
+docs/pc3-respuestas.md     # entrega esperada del estudiante para PC3 (a crear)
 ```
 
 | Área | Estado |
 |---|---|
-| Hito vigente | **PC02 cerrada; Unidad 3 consolidada hasta Sesión 29 implementada**. |
+| Hito vigente | **PC02 cerrada; Unidad 3 consolidada hasta Sesión 29 implementada; Sesión 30 / PC3 documentada para evaluación aplicada**. |
 | Arquitectura base | Alineada y documentada para sesiones 11–18. |
 | REST v1 | Implementado en `gestor-flota`, `centro-logistica` y `planificador-rutas`. |
 | gRPC | Implementado en `monitor-telemetria`. |
@@ -195,7 +197,7 @@ La Unidad 3 parte de una pregunta incómoda pero necesaria: si cada nodo observa
 | **27** | Elección de líder y detectores de fallas | Laboratorio `lab:leader-election`, tests, guía y visualización en observability-platform. | Permite decidir quién coordina cuando hay múltiples nodos candidatos y fallas parciales. |
 | **28** | Coordinación distribuida en escenarios reales | Laboratorio `lab:distributed-coordination`, tests, guía y visualización en observability-platform. | Integra tiempo, causalidad, leases, líder, sospecha de fallas y compensación en decisiones defendibles de AURA. |
 | **29** | Laboratorio integrador de sincronización y coordinación | Laboratorio `lab:coordination-integration`, tests, guía y visualización en observability-platform. | Prepara evidencia técnica para PC3 defendiendo aceptar, revisar o compensar una acción distribuida. |
-| 30 | Práctica Calificada 3 | Desarrollo y sustentación técnica. | Evaluará sincronización y coordinación distribuida. |
+| **30** | Práctica Calificada 3 - AURA: Coordinación bajo falla | Guía oficial `docs/instrucciones-laboratorio-sesion-30.md`, entrega esperada `docs/pc3-respuestas.md`, implementación acotada y evidencia de ejecución. | Evalúa aplicación integrada de sincronización, causalidad, leases, fencing, detectores de fallas, elección de líder y decisión arquitectónica sobre un incidente nuevo. |
 
 ## Qué aprende el estudiante
 
@@ -230,9 +232,9 @@ Regla de trabajo por sesión:
 4. implementación mínima;
 5. evidencia para defender la decisión.
 
-## Base didáctica actual: Sesiones 21, 22, 23, 24, 25, 26, 27, 28 y 29
+## Base didáctica actual: Sesiones 21, 22, 23, 24, 25, 26, 27, 28, 29 y PC3
 
-La plataforma de observabilidad expone nueve laboratorios conectados:
+La plataforma de observabilidad expone nueve laboratorios conectados; la PC3 usa esa base como evaluación aplicada:
 
 - **Sesión 21 — Tiempo físico:** muestra wall-clock, monotonic clock, skew, drift y ventanas de tolerancia.
 - **Sesión 22 — Sincronización de relojes:** construye sobre esa base para estimar offset/delay, aplicar correcciones y evaluar confianza.
@@ -243,6 +245,7 @@ La plataforma de observabilidad expone nueve laboratorios conectados:
 - **Sesión 27 — Elección de líder y detectores de fallas:** compara líder estable, falla, reelección, sospecha falsa y reincorporación con heartbeats y timeouts simulados.
 - **Sesión 28 — Coordinación distribuida en escenarios reales:** combina tiempo, causalidad, leases, líder, sospechas y compensación para defender decisiones AURA sin afirmar consenso.
 - **Sesión 29 — Laboratorio integrador de sincronización y coordinación:** cruza evidencia de sesiones 21-28 para decidir si una acción se acepta, requiere revisión o se compensa antes de PC3.
+- **Sesión 30 — PC3, coordinación bajo falla:** aplica la defensa integrada a un incidente nuevo y exige respuesta estructurada, implementación acotada, evidencia y matriz de decisión arquitectónica.
 
 La Sesión 29 consolida la defensa integradora para PC3 con límites explícitos:
 
@@ -312,7 +315,7 @@ npm start
 
 Luego abre `http://localhost:8010` para revisar el cockpit de observabilidad de las Sesiones 21, 22, 23, 24, 25, 26, 27, 28 y 29. La Sesión 29 queda activa como laboratorio actual de integración para defensa PC3.
 
-Guías completas de la base 21-29:
+Guías completas de la base 21-29 y evaluación PC3:
 
 ```text
 docs/instrucciones-laboratorio-sesion-21.md
@@ -324,15 +327,16 @@ docs/instrucciones-laboratorio-sesion-26.md
 docs/instrucciones-laboratorio-sesion-27.md
 docs/instrucciones-laboratorio-sesion-28.md
 docs/instrucciones-laboratorio-sesion-29.md
+docs/instrucciones-laboratorio-sesion-30.md
 ```
 
-Guía detallada de la Sesión 29:
+Guía detallada de la Sesión 30 / PC3:
 
 ```text
-docs/instrucciones-laboratorio-sesion-29.md
+docs/instrucciones-laboratorio-sesion-30.md
 ```
 
-Alcance explícito: la Sesión 29 integra razonamiento de sincronización y coordinación solo para defensa PC3; no implementa consenso, quórum, Raft/Paxos, membresía productiva, transacciones distribuidas ni failover real.
+Alcance explícito: la Sesión 29 integra razonamiento de sincronización y coordinación para defensa PC3. La Fase 5 de PC3 pide una implementación acotada, no consenso, quórum, Raft/Paxos, membresía productiva, transacciones distribuidas ni failover real. Herramientas como etcd, ZooKeeper o Raft pueden recomendarse en la Fase 6 solo si se justifican garantías y tradeoffs.
 
 ## Laboratorio anterior: Sesión 25
 
@@ -618,6 +622,7 @@ docs/instrucciones-laboratorio-sesion-15.md
 | `docs/unidad-3-backlog.md` | Roadmap estratégico de sesiones 21–30 sobre tiempo, orden, causalidad, consenso y consistencia. |
 | `docs/unidad-2-backlog.md` | Backlog y cronograma detallado de sesiones 11–20. |
 | `docs/pc2-respuestas.md` | Solución docente de PC02 con comandos, evidencia, decisiones, limitaciones y checklist de revisión. |
+| `docs/instrucciones-laboratorio-sesion-30.md` | Guía oficial de PC3: coordinación bajo falla, fases, entregables, rúbrica y checklist de entrega. |
 | `docs/instrucciones-laboratorio-sesion-23.md` | Guía para estudiar Lamport clocks, orden parcial, concurrencia y desempate determinístico. |
 | `docs/instrucciones-laboratorio-sesion-29.md` | Guía para defender integración de sincronización y coordinación antes de PC3. |
 | `docs/instrucciones-laboratorio-sesion-28.md` | Guía para estudiar coordinación distribuida aplicada, leases, líder, sospechas y compensación. |
@@ -646,6 +651,6 @@ Un avance de sesión está completo cuando cumple estas condiciones:
 
 ## Próximo paso
 
-El siguiente trabajo es la **Sesión 30: Práctica Calificada 3**.
+El siguiente trabajo es resolver la **Sesión 30: Práctica Calificada 3** siguiendo `docs/instrucciones-laboratorio-sesion-30.md`.
 
-Ahí se evaluarán las evidencias de sesiones 21–29. Consenso completo, quórums productivos, membresía real, transacciones distribuidas y failover real siguen fuera del alcance de la Sesión 29.
+Ahí se evaluarán las evidencias de sesiones 21–29 aplicadas a un incidente nuevo. La entrega esperada vive en `docs/pc3-respuestas.md`; consenso completo, quórums productivos, membresía real, transacciones distribuidas y failover real siguen fuera del alcance de la implementación acotada de PC3.
