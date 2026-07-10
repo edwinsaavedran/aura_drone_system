@@ -43,3 +43,5 @@ htmlcov/
 # Node dependencies/cache
 node_modules/
 .npm/
+# Local Pi runtime state
+.atl/
