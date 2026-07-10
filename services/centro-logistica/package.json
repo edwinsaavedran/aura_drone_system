@@ -9,6 +9,7 @@
     "lab:communication-patterns": "node src/order-created-lab.js",
     "lab:backpressure": "node src/backpressure-lab.js",
     "lab:operational-pressure": "node src/operational-pressure-lab.js",
+    "lab:pc3-coordination": "node src/pc3-coordination-lab.js",
     "test": "node --test"
   },
   "dependencies": {

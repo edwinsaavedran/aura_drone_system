@@ -216,7 +216,8 @@ pc3-coordination-lab.js
 ### Comando de ejecución
 
 ```bash
-node services/centro-logistica/src/pc3-coordination-lab.js
+cd services/centro-logistica
+npm run lab:pc3-coordination
 ```
 
 ### Decisiones que tu código debía evidenciar
@@ -241,12 +242,14 @@ La salida no tenía que ser idéntica byte a byte. Sí debía probar ideas equiv
   },
   "lc1Old": {
     "decision": "rejected",
-    "reason": "stale-owner-or-fence",
-    "leaseDeadline": 3000
+    "reason": "lease_expired",
+    "leaseDeadline": 3000,
+    "fenceStale": true
   },
   "rp5OldLeader": {
     "decision": "rejected",
-    "reason": "stale-leader"
+    "reason": "stale_leader",
+    "leaderEpoch": 6
   },
   "assignments": [
     [
@@ -266,7 +269,7 @@ La salida no tenía que ser idéntica byte a byte. Sí debía probar ideas equiv
 
 - Expone `leaseDeadline` como `acquiredAtMs + ttlMs`.
 - Usa `nowMs > acquiredAtMs + ttlMs` para detectar vencimiento del lease, declarando la convención si usa otro borde.
-- Rechaza fences menores que el último fence aceptado para el dron.
+- Rechaza fences menores que el último fence aceptado para el dron; en el caso documentado, además expone que `fence=21` es stale aunque el rechazo primario sea por lease vencido.
 - Rechaza líderes con `leader.epoch < currentLeaderEpoch`.
 - Persiste únicamente la asignación segura `Drone-Alpha-1` → `M-2002`.
 - Devuelve decisiones estructuradas con `decision`, `reason` y datos suficientes para auditar.

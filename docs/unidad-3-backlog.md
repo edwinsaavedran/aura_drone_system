@@ -55,8 +55,8 @@ Cada sesión debe dejar:
 | 27 | `services/monitor-telemetria/src/leader-election-lab.js`, `services/monitor-telemetria/test/leader-election-lab.test.js`, `docs/instrucciones-laboratorio-sesion-27.md`, script `lab:leader-election`, modo observable `leader-election`. |
 | 28 | `services/monitor-telemetria/src/distributed-coordination-lab.js`, `services/monitor-telemetria/test/distributed-coordination-lab.test.js`, `docs/instrucciones-laboratorio-sesion-28.md`, script `lab:distributed-coordination`, modo observable `distributed-coordination`. |
 | 29 | `services/monitor-telemetria/src/coordination-integration-lab.js`, `services/monitor-telemetria/test/coordination-integration-lab.test.js`, `docs/instrucciones-laboratorio-sesion-29.md`, script `lab:coordination-integration`, modo observable `coordination-integration`. |
-| 30 | `docs/instrucciones-laboratorio-sesion-30.md` como guía oficial de PC3; entrega esperada en `docs/pc3-respuestas.md`, implementación acotada recomendada en `services/centro-logistica/src/pc3-coordination-lab.js` y evidencia de ejecución. |
+| 30 | `docs/instrucciones-laboratorio-sesion-30.md`, guía de retroalimentación `docs/pc3-respuestas.md`, simulación acotada `services/centro-logistica/src/pc3-coordination-lab.js`, pruebas y script `lab:pc3-coordination`. |
 
 ## Siguiente paso
 
-Ejecutar la Sesión 30 / PC3 usando la evidencia de la Sesión 29 como entrenamiento previo. La evaluación pide aplicar la defensa integrada a un incidente nuevo: coordinación bajo falla con tiempo físico incierto, causalidad, leases, fencing, detector de fallas, elección de líder e interpretación arquitectónica sin implementar consenso real en la fase acotada.
+La Sesión 30 / PC3 está cerrada con una simulación acotada verificable. La evaluación aplica la defensa integrada a un incidente nuevo: coordinación bajo falla con tiempo físico incierto, causalidad, leases, fencing, detector de fallas, elección de líder e interpretación arquitectónica sin implementar consenso real en la fase acotada.

@@ -6,7 +6,7 @@ El objetivo no es “hacer endpoints porque sí”. El objetivo es que el estudi
 
 ## Estado actual
 
-El estado actual del repo es **Unidad 2 cerrada con PC02**, **Unidad 3 consolidada hasta la Sesión 29 implementada** y **Sesión 30 / PC3 documentada como evaluación aplicada**.
+El estado actual del repo es **Unidad 2 cerrada con PC02**, **Unidad 3 consolidada hasta la Sesión 29 implementada** y **Sesión 30 / PC3 cerrada con simulación acotada y evidencia verificable**.
 
 Esto significa que el proyecto ya no debe leerse solo como una secuencia de laboratorios. La **Práctica Calificada 02** cierra resiliencia, semánticas de entrega, backpressure, patrones de comunicación, naming y discovery básico. La **Unidad 3** empieza desde ese piso para estudiar tiempo, orden, causalidad y coordinación distribuida.
 
@@ -16,12 +16,12 @@ Ruta principal para revisar el hito actual:
 docs/PC02-20261.pdf        # enunciado original de la práctica
 docs/pc2-respuestas.md     # solución docente, evidencia y decisiones técnicas
 docs/instrucciones-laboratorio-sesion-30.md  # guía oficial de PC3
-docs/pc3-respuestas.md     # entrega esperada del estudiante para PC3 (a crear)
+docs/pc3-respuestas.md     # guía de retroalimentación y evidencia de PC3
 ```
 
 | Área | Estado |
 |---|---|
-| Hito vigente | **PC02 cerrada; Unidad 3 consolidada hasta Sesión 29 implementada; Sesión 30 / PC3 documentada para evaluación aplicada**. |
+| Hito vigente | **PC02 cerrada; Unidad 3 consolidada hasta Sesión 29 implementada; Sesión 30 / PC3 cerrada con simulación acotada verificable**. |
 | Arquitectura base | Alineada y documentada para sesiones 11–18. |
 | REST v1 | Implementado en `gestor-flota`, `centro-logistica` y `planificador-rutas`. |
 | gRPC | Implementado en `monitor-telemetria`. |
@@ -197,7 +197,7 @@ La Unidad 3 parte de una pregunta incómoda pero necesaria: si cada nodo observa
 | **27** | Elección de líder y detectores de fallas | Laboratorio `lab:leader-election`, tests, guía y visualización en observability-platform. | Permite decidir quién coordina cuando hay múltiples nodos candidatos y fallas parciales. |
 | **28** | Coordinación distribuida en escenarios reales | Laboratorio `lab:distributed-coordination`, tests, guía y visualización en observability-platform. | Integra tiempo, causalidad, leases, líder, sospecha de fallas y compensación en decisiones defendibles de AURA. |
 | **29** | Laboratorio integrador de sincronización y coordinación | Laboratorio `lab:coordination-integration`, tests, guía y visualización en observability-platform. | Prepara evidencia técnica para PC3 defendiendo aceptar, revisar o compensar una acción distribuida. |
-| **30** | Práctica Calificada 3 - AURA: Coordinación bajo falla | Guía oficial `docs/instrucciones-laboratorio-sesion-30.md`, entrega esperada `docs/pc3-respuestas.md`, implementación acotada y evidencia de ejecución. | Evalúa aplicación integrada de sincronización, causalidad, leases, fencing, detectores de fallas, elección de líder y decisión arquitectónica sobre un incidente nuevo. |
+| **30** | Práctica Calificada 3 - AURA: Coordinación bajo falla | Guía oficial `docs/instrucciones-laboratorio-sesion-30.md`, guía de retroalimentación `docs/pc3-respuestas.md`, simulación acotada `lab:pc3-coordination`, pruebas y evidencia de ejecución. | Evalúa aplicación integrada de sincronización, causalidad, leases, fencing, detectores de fallas, elección de líder y decisión arquitectónica sobre un incidente nuevo. |
 
 ## Qué aprende el estudiante
 
@@ -651,6 +651,6 @@ Un avance de sesión está completo cuando cumple estas condiciones:
 
 ## Próximo paso
 
-El siguiente trabajo es resolver la **Sesión 30: Práctica Calificada 3** siguiendo `docs/instrucciones-laboratorio-sesion-30.md`.
+La **Sesión 30: Práctica Calificada 3** quedó cerrada con `npm run lab:pc3-coordination` en `services/centro-logistica`, sus pruebas y la guía de retroalimentación `docs/pc3-respuestas.md`.
 
-Ahí se evaluarán las evidencias de sesiones 21–29 aplicadas a un incidente nuevo. La entrega esperada vive en `docs/pc3-respuestas.md`; consenso completo, quórums productivos, membresía real, transacciones distribuidas y failover real siguen fuera del alcance de la implementación acotada de PC3.
+La evidencia aplica las sesiones 21–29 a un incidente nuevo. Consenso completo, quórums productivos, membresía real, transacciones distribuidas y failover real siguen fuera del alcance de la implementación acotada de PC3.
